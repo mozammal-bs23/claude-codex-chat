@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>claude-codex-chat — Product Requirements</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/black.min.css" />
+  <style>
+    :root {
+      --accent: #7c6afb;
+      --accent2: #a78bfa;
+      --green: #34d399;
+      --yellow: #fbbf24;
+      --red: #f87171;
+      --bg-card: rgba(255,255,255,0.05);
+      --border: rgba(255,255,255,0.1);
+    }
+
+    .reveal {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .reveal h1, .reveal h2, .reveal h3 {
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      text-transform: none;
+    }
+
+    .reveal h1 { font-size: 2.4em; color: #fff; }
+    .reveal h2 { font-size: 1.7em; color: var(--accent2); border-bottom: 1px solid var(--border); padding-bottom: 0.3em; margin-bottom: 0.6em; }
+    .reveal h3 { font-size: 1.1em; color: var(--accent2); margin-bottom: 0.4em; }
+    .reveal p, .reveal li { font-size: 0.78em; line-height: 1.7; color: #cbd5e1; }
+    .reveal ul { list-style: none; padding: 0; margin: 0; }
+    .reveal ul li::before { content: "→ "; color: var(--accent); font-weight: 700; }
+
+    .subtitle {
+      font-size: 1em;
+      color: #94a3b8;
+      margin-top: 0.5em;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.2em 0.7em;
+      border-radius: 999px;
+      font-size: 0.6em;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .tag-purple { background: rgba(124,106,251,0.25); color: var(--accent2); border: 1px solid var(--accent); }
+    .tag-green  { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid var(--green); }
+    .tag-yellow { background: rgba(251,191,36,0.15); color: var(--yellow); border: 1px solid var(--yellow); }
+    .tag-red    { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid var(--red); }
+
+    /* Grid layouts */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2em; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1em; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.8em; }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1em 1.2em;
+    }
+
+    .card h3 { margin-top: 0; }
+
+    .stat {
+      text-align: center;
+      padding: 1em;
+    }
+    .stat .num {
+      font-size: 2.2em;
+      font-weight: 800;
+      color: var(--accent2);
+      display: block;
+      line-height: 1;
+    }
+    .stat .label {
+      font-size: 0.6em;
+      color: #94a3b8;
+      margin-top: 0.4em;
+      display: block;
+    }
+
+    /* Provider badges */
+    .provider-row { display: flex; gap: 0.8em; justify-content: center; flex-wrap: wrap; margin-top: 0.5em; }
+    .provider {
+      padding: 0.5em 1.2em;
+      border-radius: 8px;
+      font-size: 0.65em;
+      font-weight: 700;
+      border: 1px solid;
+    }
+    .p-claude  { background: rgba(124,106,251,0.2); border-color: var(--accent); color: var(--accent2); }
+    .p-openai  { background: rgba(52,211,153,0.15); border-color: var(--green);  color: var(--green); }
+    .p-gemini  { background: rgba(251,191,36,0.15);  border-color: var(--yellow); color: var(--yellow); }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; font-size: 0.7em; }
+    th { background: rgba(124,106,251,0.2); color: var(--accent2); padding: 0.6em 0.8em; text-align: left; font-size: 0.85em; }
+    td { padding: 0.55em 0.8em; border-bottom: 1px solid var(--border); color: #cbd5e1; }
+    tr:hover td { background: rgba(255,255,255,0.03); }
+    .check { color: var(--green); font-weight: 700; }
+    .dash  { color: #475569; }
+
+    /* Phase timeline */
+    .phases { display: flex; gap: 0; width: 100%; }
+    .phase {
+      flex: 1;
+      padding: 0.9em 1em;
+      position: relative;
+      font-size: 0.7em;
+    }
+    .phase:not(:last-child)::after {
+      content: "▶";
+      position: absolute;
+      right: -0.5em;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--border);
+      font-size: 1.2em;
+      z-index: 2;
+    }
+    .phase-1 { background: rgba(124,106,251,0.15); border: 1px solid var(--accent); border-radius: 10px 0 0 10px; }
+    .phase-2 { background: rgba(52,211,153,0.1);  border: 1px solid var(--green);  border-radius: 0; border-left: none; border-right: none; }
+    .phase-3 { background: rgba(251,191,36,0.1);  border: 1px solid var(--yellow); border-radius: 0 10px 10px 0; }
+
+    .phase .phase-label { font-weight: 800; font-size: 1.1em; display: block; margin-bottom: 0.3em; }
+    .phase-1 .phase-label { color: var(--accent2); }
+    .phase-2 .phase-label { color: var(--green); }
+    .phase-3 .phase-label { color: var(--yellow); }
+    .phase ul { margin-top: 0.4em; }
+    .phase li { font-size: 0.88em; color: #94a3b8; }
+    .phase li::before { content: "· "; color: inherit; }
+
+    /* Metric cards */
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.8em 1em;
+      font-size: 0.7em;
+    }
+    .metric-card .metric-id { color: var(--accent); font-weight: 700; font-size: 0.85em; }
+    .metric-card .metric-val { color: #fff; font-size: 1.05em; font-weight: 600; margin: 0.2em 0; }
+    .metric-card .metric-desc { color: #64748b; font-size: 0.85em; }
+
+    .counter-metric-card {
+      border-color: rgba(248,113,113,0.4);
+      background: rgba(248,113,113,0.07);
+    }
+    .counter-metric-card .metric-id { color: var(--red); }
+
+    /* Title slide gradient */
+    .title-slide { text-align: center; }
+    .logo-row { display: flex; justify-content: center; gap: 1.2em; margin: 1em 0; }
+    .logo-pill {
+      padding: 0.4em 1em;
+      border-radius: 999px;
+      font-size: 0.7em;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .pill-purple { background: rgba(124,106,251,0.3); color: var(--accent2); border: 1px solid var(--accent); }
+    .pill-green  { background: rgba(52,211,153,0.2);  color: var(--green);  border: 1px solid var(--green); }
+    .pill-yellow { background: rgba(251,191,36,0.2);  color: var(--yellow); border: 1px solid var(--yellow); }
+
+    .accent-line { color: var(--accent2); }
+
+    /* Journey cards */
+    .journey {
+      background: var(--bg-card);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 0.7em 1em;
+      font-size: 0.68em;
+    }
+    .journey .j-name { color: var(--accent2); font-weight: 700; display: block; margin-bottom: 0.2em; }
+    .journey .j-desc { color: #94a3b8; }
+
+    /* FR counter */
+    .fr-badge {
+      display: inline-block;
+      background: rgba(124,106,251,0.2);
+      border: 1px solid var(--accent);
+      color: var(--accent2);
+      padding: 0.15em 0.5em;
+      border-radius: 4px;
+      font-size: 0.7em;
+      font-weight: 700;
+      margin-right: 0.3em;
+    }
+
+    /* Reveal overrides */
+    .reveal .slides section { padding: 1.5em 2em; }
+    .reveal .progress { background: rgba(124,106,251,0.3); }
+    .reveal .progress span { background: var(--accent); }
+
+    .reveal blockquote {
+      background: var(--bg-card);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 0.6em 1em;
+      font-size: 0.75em;
+      color: #94a3b8;
+      font-style: normal;
+      width: auto;
+      box-shadow: none;
+    }
+
+    .center-stat-row { display: flex; justify-content: center; gap: 1.5em; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ─── TITLE ─── -->
+    <section>
+      <div class="title-slide">
+        <span class="tag tag-purple">Product Requirements</span>
+        <h1 style="margin-top:0.5em;">claude-codex-chat</h1>
+        <p class="subtitle">A multi-provider AI chat mobile app for iOS &amp; Android</p>
+        <div class="logo-row">
+          <span class="logo-pill pill-purple">Claude (Anthropic)</span>
+          <span class="logo-pill pill-green">OpenAI GPT</span>
+          <span class="logo-pill pill-yellow">Google Gemini</span>
+        </div>
+        <p style="margin-top:1.5em; font-size:0.6em; color:#475569;">June 2026 · v1.0 Draft</p>
+      </div>
+    </section>
+
+    <!-- ─── VISION ─── -->
+    <section>
+      <h2>Vision</h2>
+      <blockquote>
+        One app. Three AI providers. The cleanest mobile chat experience on the market.
+      </blockquote>
+      <div class="grid-3" style="margin-top:1.2em;">
+        <div class="card">
+          <h3>🎯 What it is</h3>
+          <p>A polished mobile AI chat app that puts Claude, GPT, and Gemini in a single inbox — no tab switching, no three subscriptions.</p>
+        </div>
+        <div class="card">
+          <h3>👤 Who it's for</h3>
+          <p>General consumers who already use AI daily and want a faster, cleaner, mobile-first experience.</p>
+        </div>
+        <div class="card">
+          <h3>🏆 Why it wins</h3>
+          <p>Executes the established pattern better: faster streaming, multi-provider access, and a trustworthy privacy model.</p>
+        </div>
+      </div>
+      <div class="center-stat-row" style="margin-top:1.4em;">
+        <div class="stat"><span class="num">3</span><span class="label">AI Providers</span></div>
+        <div class="stat"><span class="num">46</span><span class="label">Functional Requirements</span></div>
+        <div class="stat"><span class="num">2</span><span class="label">Platforms (iOS + Android)</span></div>
+        <div class="stat"><span class="num">6 mo</span><span class="label">To Launch</span></div>
+      </div>
+    </section>
+
+    <!-- ─── TARGET USER ─── -->
+    <section>
+      <h2>Target User — Jobs To Be Done</h2>
+      <div class="grid-2">
+        <ul style="margin-top:0.5em;">
+          <li>Get a fast, capable answer without switching between three apps</li>
+          <li>Continue a conversation later from any device</li>
+          <li>Ask about an image or document by attaching it directly</li>
+          <li>Dictate a question hands-free while commuting</li>
+        </ul>
+        <ul style="margin-top:0.5em;">
+          <li>Control which model answers when one works better for the task</li>
+          <li>Trust that conversations are private and deletable</li>
+          <li>Stay within budget with a clear usage meter</li>
+        </ul>
+      </div>
+      <div style="margin-top:1.2em;">
+        <h3 style="margin-bottom:0.6em;">Non-Users (v1)</h3>
+        <div style="display:flex; gap:0.6em; flex-wrap:wrap;">
+          <span class="tag tag-red">No enterprise / SSO</span>
+          <span class="tag tag-red">No team workspaces</span>
+          <span class="tag tag-red">No web search grounding</span>
+          <span class="tag tag-red">No code execution</span>
+          <span class="tag tag-red">No API access</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── USER JOURNEYS ─── -->
+    <section>
+      <h2>Key User Journeys</h2>
+      <div class="grid-2" style="gap:0.8em;">
+        <div class="journey">
+          <span class="j-name">UJ-1 · Priya — Quick answer on the go</span>
+          <span class="j-desc">Graduate student asks a statistics question between classes. Streaming response in &lt;3s, markdown formula renders, conversation saves automatically.</span>
+        </div>
+        <div class="journey">
+          <span class="j-name">UJ-2 · Marcus — Switches model mid-conversation</span>
+          <span class="j-desc">Developer taps model badge, switches from Claude to GPT-4o. History carries over, coding response improves.</span>
+        </div>
+        <div class="journey">
+          <span class="j-name">UJ-3 · Aisha — Asks about a photo</span>
+          <span class="j-desc">Photographs an ingredient label in the grocery store, attaches it, gets a plain-English breakdown in under 30 seconds.</span>
+        </div>
+        <div class="journey">
+          <span class="j-name">UJ-4 · James — Voice input &amp; TTS output</span>
+          <span class="j-desc">Commuter dictates a question, reviews transcription, sends. AI reads the response aloud through earbuds.</span>
+        </div>
+        <div class="journey">
+          <span class="j-name">UJ-5 · Fatima — Hits free limit, upgrades</span>
+          <span class="j-desc">Hits 20-message daily cap, sees upgrade modal, completes Apple Pay, Pro activates immediately — no restart.</span>
+        </div>
+        <div class="journey">
+          <span class="j-name">UJ-6 · David — Deletes his data</span>
+          <span class="j-desc">Exports JSON archive, deletes all data from Settings → Privacy. Account and server data purged within 30 days.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── FEATURES OVERVIEW ─── -->
+    <section>
+      <h2>Feature Groups</h2>
+      <div class="grid-3" style="gap:0.8em;">
+        <div class="card">
+          <h3>🔐 Auth &amp; Accounts</h3>
+          <p><span class="fr-badge">FR 1–5</span></p>
+          <ul>
+            <li>Email/password</li>
+            <li>Google &amp; Apple Sign-In</li>
+            <li>JWT + rotating refresh tokens</li>
+            <li>Password reset, account deletion</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>💬 Conversations</h3>
+          <p><span class="fr-badge">FR 6–12</span></p>
+          <ul>
+            <li>Create, rename, delete</li>
+            <li>Full-text search</li>
+            <li>Pin (up to 5) &amp; archive</li>
+            <li>Synced across devices</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>⚡ AI Chat</h3>
+          <p><span class="fr-badge">FR 13–21</span></p>
+          <ul>
+            <li>Streaming via SSE</li>
+            <li>Markdown + code highlighting</li>
+            <li>Stop, regenerate, edit &amp; resubmit</li>
+            <li>Copy &amp; share</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>🤖 Multi-Model</h3>
+          <p><span class="fr-badge">FR 22–25</span></p>
+          <ul>
+            <li>Per-conversation model selector</li>
+            <li>7 models across 3 providers</li>
+            <li>Capability badges</li>
+            <li>Default model preference</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>📎 Multimodal</h3>
+          <p><span class="fr-badge">FR 26–29</span></p>
+          <ul>
+            <li>Image (camera / gallery)</li>
+            <li>Files — PDF, DOCX, TXT</li>
+            <li>Voice input (on-device STT)</li>
+            <li>Voice output (native TTS)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>⚙️ Custom Instructions</h3>
+          <p><span class="fr-badge">FR 30–32</span></p>
+          <ul>
+            <li>Global custom instructions</li>
+            <li>Per-conversation system prompt</li>
+            <li>Saved Personas (up to 20)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>💳 Subscription</h3>
+          <p><span class="fr-badge">FR 33–37</span></p>
+          <ul>
+            <li>Free tier (20 msg/day)</li>
+            <li>Pro $9.99/mo · $89.99/yr</li>
+            <li>App Store &amp; Play Billing</li>
+            <li>RevenueCat entitlements</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>🎨 Settings</h3>
+          <p><span class="fr-badge">FR 38–43</span></p>
+          <ul>
+            <li>Light / Dark / System theme</li>
+            <li>Font size presets</li>
+            <li>Auto-TTS toggle</li>
+            <li>Notification preferences</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>🔒 Privacy &amp; Data</h3>
+          <p><span class="fr-badge">FR 44–46</span></p>
+          <ul>
+            <li>Data export (JSON)</li>
+            <li>History opt-out</li>
+            <li>Delete all conversations</li>
+            <li>GDPR + CCPA compliant</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── MULTI-PROVIDER ─── -->
+    <section>
+      <h2>Multi-Provider AI Support</h2>
+      <div class="provider-row" style="margin-bottom:1.2em;">
+        <span class="provider p-claude">Anthropic Claude</span>
+        <span class="provider p-openai">OpenAI GPT</span>
+        <span class="provider p-gemini">Google Gemini</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Provider</th>
+            <th>Text</th>
+            <th>Images</th>
+            <th>Files</th>
+            <th>Tier</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Claude Haiku 4.5</td><td>Anthropic</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td><span class="tag tag-green">Free</span></td></tr>
+          <tr><td>Claude Sonnet 4.6</td><td>Anthropic</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td><span class="tag tag-purple">Pro</span></td></tr>
+          <tr><td>Claude Opus 4.8</td><td>Anthropic</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td><span class="tag tag-purple">Pro</span></td></tr>
+          <tr><td>GPT-4o mini</td><td>OpenAI</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td><span class="tag tag-green">Free</span></td></tr>
+          <tr><td>GPT-4o</td><td>OpenAI</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td><span class="tag tag-purple">Pro</span></td></tr>
+          <tr><td>Gemini 1.5 Flash</td><td>Google</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td><span class="tag tag-green">Free</span></td></tr>
+          <tr><td>Gemini 1.5 Pro</td><td>Google</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td><span class="tag tag-purple">Pro</span></td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:0.8em; font-size:0.6em; color:#475569;">All AI calls proxied through FastAPI backend — API keys never stored in the mobile app.</p>
+    </section>
+
+    <!-- ─── MONETIZATION ─── -->
+    <section>
+      <h2>Monetization — Freemium + Subscription</h2>
+      <div class="grid-2" style="gap:1.5em; align-items:start;">
+        <div>
+          <table>
+            <thead>
+              <tr><th>Feature</th><th>Free</th><th>Pro</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Messages / day</td><td>20</td><td>Unlimited</td></tr>
+              <tr><td>Models</td><td>3 lite models</td><td>All 7 models</td></tr>
+              <tr><td>Image uploads</td><td class="dash">—</td><td class="check">✓</td></tr>
+              <tr><td>File uploads</td><td class="dash">—</td><td class="check">✓</td></tr>
+              <tr><td>Voice I/O</td><td class="dash">—</td><td class="check">✓</td></tr>
+              <tr><td>History</td><td>30 days</td><td>Unlimited</td></tr>
+              <tr><td>Priority queue</td><td class="dash">—</td><td class="check">✓</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <div class="card" style="text-align:center; margin-bottom:1em;">
+            <h3 style="color:#94a3b8; font-size:0.85em;">Monthly Plan</h3>
+            <p style="font-size:2em; font-weight:800; color:#fff; line-height:1;">$9.99<span style="font-size:0.4em; color:#64748b;">/month</span></p>
+          </div>
+          <div class="card" style="text-align:center; border-color: var(--accent);">
+            <h3 style="color:#94a3b8; font-size:0.85em;">Annual Plan</h3>
+            <p style="font-size:2em; font-weight:800; color:var(--accent2); line-height:1;">$89.99<span style="font-size:0.4em; color:#64748b;">/year</span></p>
+            <span class="tag tag-green" style="margin-top:0.3em;">~25% savings</span>
+          </div>
+          <p style="margin-top:0.8em; font-size:0.6em; color:#475569;">Processed via App Store / Google Play Billing through RevenueCat. Entitlements activate immediately on purchase.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── TECH STACK ─── -->
+    <section>
+      <h2>Tech Stack &amp; Architecture</h2>
+      <div class="grid-2" style="gap:1.5em;">
+        <div>
+          <table>
+            <thead><tr><th>Layer</th><th>Technology</th></tr></thead>
+            <tbody>
+              <tr><td>Mobile</td><td>Flutter (Dart) — iOS 16+ · Android 8+</td></tr>
+              <tr><td>State</td><td>Riverpod or BLoC</td></tr>
+              <tr><td>Backend</td><td>Python 3.12 + FastAPI</td></tr>
+              <tr><td>Database</td><td>PostgreSQL (asyncpg / SQLAlchemy)</td></tr>
+              <tr><td>Cache</td><td>Redis (sessions, rate limits)</td></tr>
+              <tr><td>Streaming</td><td>Server-Sent Events (SSE)</td></tr>
+              <tr><td>File Storage</td><td>AWS S3 / Google Cloud Storage</td></tr>
+              <tr><td>Auth</td><td>JWT + OAuth2 (Google, Apple)</td></tr>
+              <tr><td>Billing</td><td>RevenueCat + Stripe (future web)</td></tr>
+              <tr><td>CI/CD</td><td>GitHub Actions</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <div class="card" style="font-family: monospace; font-size:0.58em; line-height:1.8; color:#94a3b8;">
+            <div style="color:var(--accent2); font-weight:700; margin-bottom:0.5em;">Architecture Overview</div>
+            ┌─ Flutter App ─────────────────┐<br>
+            │ Auth │ Chat UI │ Model Sel.   │<br>
+            │ File Upload │ Voice          │<br>
+            └──────────┬────────────────────┘<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│ HTTPS / SSE<br>
+            ┌──────────▼────────────────────┐<br>
+            │ FastAPI Backend               │<br>
+            │ Auth · Chat · Files · Billing │<br>
+            └──┬───────┬──────┬──────┬──────┘<br>
+            &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            PG&nbsp;&nbsp;Redis&nbsp;&nbsp;S3&nbsp;&nbsp;RevenueCat<br>
+            &nbsp;&nbsp;│<br>
+            ┌──▼────────────────────────────┐<br>
+            │ AI Provider Gateway           │<br>
+            │ Anthropic · OpenAI · Gemini   │<br>
+            └───────────────────────────────┘
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── NFRs ─── -->
+    <section>
+      <h2>Non-Functional Requirements</h2>
+      <div class="grid-4" style="gap:0.8em;">
+        <div class="card">
+          <h3>⚡ Performance</h3>
+          <ul>
+            <li>First token P95 &lt; 3s</li>
+            <li>Cold start &lt; 3s</li>
+            <li>Conversation list &lt; 1s (500 convos)</li>
+            <li>Offline: read cached convos</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>🔒 Security</h3>
+          <ul>
+            <li>API keys backend-only</li>
+            <li>TLS 1.3 minimum</li>
+            <li>Argon2id password hashing</li>
+            <li>Rate limiting on all endpoints</li>
+            <li>JWT 15-min expiry + rotation</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>📈 Scalability</h3>
+          <ul>
+            <li>Stateless, horizontally scalable</li>
+            <li>99.5% monthly uptime SLA</li>
+            <li>Provider error → clear fallback</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>♿ Accessibility</h3>
+          <ul>
+            <li>WCAG 2.1 AA contrast</li>
+            <li>VoiceOver + TalkBack labels</li>
+            <li>44×44pt min touch targets</li>
+            <li>Voice features are additive</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:1em; display:flex; gap:0.6em; flex-wrap:wrap; justify-content:center;">
+        <span class="tag tag-purple">GDPR Compliant</span>
+        <span class="tag tag-purple">CCPA Compliant</span>
+        <span class="tag tag-green">App Store Guidelines</span>
+        <span class="tag tag-green">Play Store Policy</span>
+        <span class="tag tag-yellow">Age Rating: 12+</span>
+      </div>
+    </section>
+
+    <!-- ─── ROADMAP ─── -->
+    <section>
+      <h2>Delivery Roadmap</h2>
+      <div class="phases" style="margin-top:0.5em;">
+        <div class="phase phase-1">
+          <span class="phase-label">Phase 1 · MVP</span>
+          <span style="color:#64748b; font-size:0.85em;">Months 1–3</span>
+          <ul>
+            <li>Auth (email, Google, Apple)</li>
+            <li>Conversation list &amp; threads</li>
+            <li>Streaming chat — Claude + OpenAI</li>
+            <li>Model selector (5 models)</li>
+            <li>Free tier + Pro subscription</li>
+            <li>Dark / light mode</li>
+            <li>Basic settings</li>
+          </ul>
+        </div>
+        <div class="phase phase-2">
+          <span class="phase-label">Phase 2 · Full Features</span>
+          <span style="color:#64748b; font-size:0.85em;">Months 4–5</span>
+          <ul>
+            <li>Gemini integration</li>
+            <li>Image &amp; file attachments</li>
+            <li>Voice input &amp; output</li>
+            <li>Custom instructions &amp; Personas</li>
+            <li>Search, pin, archive</li>
+            <li>Data export &amp; deletion</li>
+            <li>History opt-out</li>
+          </ul>
+        </div>
+        <div class="phase phase-3">
+          <span class="phase-label">Phase 3 · Launch</span>
+          <span style="color:#64748b; font-size:0.85em;">Month 6</span>
+          <ul>
+            <li>Performance hardening</li>
+            <li>Accessibility audit</li>
+            <li>App Store submission</li>
+            <li>Play Store submission</li>
+            <li>GA launch</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="center-stat-row" style="margin-top:1.5em;">
+        <div class="stat"><span class="num" style="color:var(--accent2);">3 mo</span><span class="label">MVP ready</span></div>
+        <div class="stat"><span class="num" style="color:var(--green);">5 mo</span><span class="label">Feature complete</span></div>
+        <div class="stat"><span class="num" style="color:var(--yellow);">6 mo</span><span class="label">Launch</span></div>
+      </div>
+    </section>
+
+    <!-- ─── SUCCESS METRICS ─── -->
+    <section>
+      <h2>Success Metrics</h2>
+      <div class="grid-3" style="gap:0.7em; margin-bottom:0.8em;">
+        <div class="metric-card">
+          <span class="metric-id">SM-1 · Primary</span>
+          <div class="metric-val">Day-7 retention ≥ 30%</div>
+          <div class="metric-desc">of new installs. Validates FR-7, FR-13, FR-14. Proves ongoing daily value. (UJ-1)</div>
+        </div>
+        <div class="metric-card">
+          <span class="metric-id">SM-2 · Primary</span>
+          <div class="metric-val">Free → Pro ≥ 5%</div>
+          <div class="metric-desc">conversion within 14 days of first use. Validates FR-33, FR-35. (UJ-5)</div>
+        </div>
+        <div class="metric-card">
+          <span class="metric-id">SM-3 · Primary</span>
+          <div class="metric-val">First token P95 ≤ 3s</div>
+          <div class="metric-desc">Client-side measured streaming latency. Validates NFR-1.</div>
+        </div>
+        <div class="metric-card">
+          <span class="metric-id">SM-4 · Secondary</span>
+          <div class="metric-val">≥ 3 convos / user / week</div>
+          <div class="metric-desc">Active engagement depth. Validates UJ-1.</div>
+        </div>
+        <div class="metric-card">
+          <span class="metric-id">SM-5 · Secondary</span>
+          <div class="metric-val">≥ 20% multimodal adoption</div>
+          <div class="metric-desc">Pro users using images or voice within 30 days. Validates FR-26, FR-28.</div>
+        </div>
+        <div class="metric-card">
+          <span class="metric-id">SM-6 · Secondary</span>
+          <div class="metric-val">≥ 4.3 ★ store rating</div>
+          <div class="metric-desc">App Store + Google Play within 60 days of launch.</div>
+        </div>
+      </div>
+      <div class="grid-2" style="gap:0.7em;">
+        <div class="metric-card counter-metric-card">
+          <span class="metric-id">SM-C1 · Counter-metric</span>
+          <div class="metric-val">Avg. messages per session</div>
+          <div class="metric-desc">High volume may mean AI is failing — not high engagement. Counterbalances SM-1.</div>
+        </div>
+        <div class="metric-card counter-metric-card">
+          <span class="metric-id">SM-C2 · Counter-metric</span>
+          <div class="metric-val">Privacy support tickets</div>
+          <div class="metric-desc">High conversion via hard cancellation flows is not success. Counterbalances SM-2.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── OPEN QUESTIONS ─── -->
+    <section>
+      <h2>Open Questions &amp; Assumptions</h2>
+      <div class="grid-2" style="gap:1em;">
+        <div>
+          <h3 style="margin-bottom:0.6em;">Open Questions</h3>
+          <ul>
+            <li>App name — "claude-codex-chat" is a working title</li>
+            <li>Annual pricing — $89.99/yr needs pricing strategy confirm</li>
+            <li>Push notifications — iOS BGAppRefreshTask constraints</li>
+            <li>File extraction library — DOCX / PDF server-side tool TBD</li>
+            <li>Malware scanning — ClamAV latency impact TBD</li>
+            <li>Data export delivery — async email vs in-app download</li>
+            <li>30-day free history limit — right balance to drive upgrades?</li>
+            <li>Provider failover — manual-only in v1 acceptable?</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="margin-bottom:0.6em;">Key Assumptions</h3>
+          <ul>
+            <li>Provider latency stays within 3-second P95 budget</li>
+            <li>5-image per message limit consistent with provider APIs</li>
+            <li>7-day soft-delete with no undo UI acceptable</li>
+            <li>30-day GDPR erasure window OK given backup retention</li>
+            <li>Client-side syntax highlighting adds &lt;200 KB</li>
+            <li>Free-user blended AI cost manageable at launch scale</li>
+            <li>Training data opt-out default; opt-in available later</li>
+            <li>v1 English only; localization deferred to v2</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── NEXT STEPS ─── -->
+    <section>
+      <h2>Next Steps</h2>
+      <div class="grid-3" style="gap:1.2em; margin-top:1.5em;">
+        <div class="card" style="border-color:var(--accent); text-align:center; padding:1.8em 1.2em;">
+          <div style="font-size:2.4em; line-height:1; margin-bottom:0.4em;">🎨</div>
+          <h3 style="font-size:1em; color:var(--accent2); margin-bottom:0.6em;">UX Design</h3>
+          <p style="font-size:0.72em; color:#94a3b8; margin-bottom:1em;">Wireframes and design system for the 6 core surfaces. Confirms visual direction and interaction patterns.</p>
+          <span class="tag tag-purple">bmad-ux</span>
+        </div>
+        <div class="card" style="border-color:var(--green); text-align:center; padding:1.8em 1.2em;">
+          <div style="font-size:2.4em; line-height:1; margin-bottom:0.4em;">🏛️</div>
+          <h3 style="font-size:1em; color:var(--green); margin-bottom:0.6em;">Architecture</h3>
+          <p style="font-size:0.72em; color:#94a3b8; margin-bottom:1em;">Flutter app architecture, FastAPI service design, database schema, SSE streaming, and provider gateway.</p>
+          <span class="tag tag-green">bmad-create-architecture</span>
+        </div>
+        <div class="card" style="border-color:var(--yellow); text-align:center; padding:1.8em 1.2em;">
+          <div style="font-size:2.4em; line-height:1; margin-bottom:0.4em;">📋</div>
+          <h3 style="font-size:1em; color:var(--yellow); margin-bottom:0.6em;">Epics &amp; Stories</h3>
+          <p style="font-size:0.72em; color:#94a3b8; margin-bottom:1em;">Break 46 FRs into sprint-ready epics and user stories. Prioritize the Phase 1 MVP backlog.</p>
+          <span class="tag tag-yellow">bmad-create-epics-and-stories</span>
+        </div>
+      </div>
+      <div style="margin-top:1.2em; text-align:center;">
+        <p style="font-size:0.58em; color:#475569;">PRD: <code style="color:var(--accent2);">_bmad-output/planning-artifacts/prds/prd-claude-codex-chat-2026-06-18/prd.md</code></p>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    transition: 'slide',
+    transitionSpeed: 'fast',
+    controls: true,
+    progress: true,
+    center: true,
+    width: 1200,
+    height: 700,
+    margin: 0.04,
+  });
+</script>
+</body>
+</html>
