@@ -6,32 +6,32 @@ This addendum preserves technical implications from `requirement_v2.md`. It info
 
 The confirmed product boundary is:
 
-- **Poco Editor:** owns the editor, backend services, repositories/workspaces, agent execution, models, commands, Git operations, permissions, authoritative state, and APIs.
-- **Our team:** owns the iOS/Android experience, secure credential handling, Poco API integration, mobile state/cache, push-notification presentation, mobile analytics/crash reporting, accessibility, app-store delivery, and mobile QA.
+- **Puku Editor:** owns the editor, backend services, repositories/workspaces, agent execution, models, commands, Git operations, permissions, authoritative state, and APIs.
+- **Our team:** owns the iOS/Android experience, secure credential handling, Puku API integration, mobile state/cache, push-notification presentation, mobile analytics/crash reporting, accessibility, app-store delivery, and mobile QA.
 
-The mobile app should communicate only through documented Poco APIs. It should not connect directly to developer machines, Git providers, model providers, or execution runtimes unless Poco explicitly defines that integration as part of its supported API contract.
+The mobile app should communicate only through documented Puku APIs. It should not connect directly to developer machines, Git providers, model providers, or execution runtimes unless Puku explicitly defines that integration as part of its supported API contract.
 
-Whether Poco executes locally, in the cloud, or through a hybrid system is an internal Poco concern unless it changes mobile-visible availability or state semantics.
+Whether Puku executes locally, in the cloud, or through a hybrid system is an internal Puku concern unless it changes mobile-visible availability or state semantics.
 
 ## State and transport implications
 
-- Poco API state is authoritative for commands and tool actions.
+- Puku API state is authoritative for commands and tool actions.
 - Commands and approval requests need durable unique IDs.
-- Poco must supply ordered or cursor-based event replay and state reconciliation.
+- Puku must supply ordered or cursor-based event replay and state reconciliation.
 - An approval must be bound to the exact action payload presented to the user.
 - Push notifications are advisory navigation; they do not independently authorize actions.
 - Checkpoints cover workspace file changes, not external side effects.
 
 ## Security implications
 
-- Workspace and organization boundaries must be enforced by Poco APIs.
+- Workspace and organization boundaries must be enforced by Puku APIs.
 - Mobile access and refresh credentials must be short-lived, scoped, and revocable.
-- Sign-out must remove tokens and sensitive cached Poco data.
+- Sign-out must remove tokens and sensitive cached Puku data.
 - Mobile diagnostics should exclude code, prompts, secrets, and command output by default.
 - Persistent permission rules require scope visibility and revocation.
 - An unrestricted bypass mode should only be considered in disposable isolated environments.
 
-## Poco API dependency checklist
+## Puku API dependency checklist
 
 - Authentication, refresh, logout, MFA/SSO, and account recovery.
 - User profile, organizations, entitlements, and feature flags.

@@ -6,7 +6,6 @@ created: 2026-06-21
 updated: 2026-06-21
 supersedes: requirements-analysis.md and docs/PRD.md for product direction
 ---
-
 # Mobile Coding Agent — Requirements v2
 
 ## 1. Purpose
@@ -68,16 +67,16 @@ Team administration and enterprise governance are secondary, post-MVP concerns.
 
 ### 4.2 Initial success measures
 
-| ID | Measure | Draft target |
-|---|---|---|
-| SM-1 | Pairing completion rate | ≥ 80% of users who begin pairing |
-| SM-2 | Time from app open to first submitted coding task | ≤ 10 minutes for a new user; ≤ 30 seconds for a returning user |
-| SM-3 | Weekly users completing at least one agent task | ≥ 35% of weekly active users |
-| SM-4 | Approval notification delivery | ≥ 99% within 10 seconds under normal network conditions |
-| SM-5 | Session event delivery after runtime receipt | p95 ≤ 1 second |
-| SM-6 | Crash-free mobile sessions | ≥ 99.5% |
-| SM-C1 | Unintended or wrongly approved destructive actions | 0 known incidents |
-| SM-C2 | Tasks marked successful while required tests failed | < 1% |
+| ID    | Measure                                             | Draft target                                                     |
+| ----- | --------------------------------------------------- | ---------------------------------------------------------------- |
+| SM-1  | Pairing completion rate                             | ≥ 80% of users who begin pairing                                |
+| SM-2  | Time from app open to first submitted coding task   | ≤ 10 minutes for a new user; ≤ 30 seconds for a returning user |
+| SM-3  | Weekly users completing at least one agent task     | ≥ 35% of weekly active users                                    |
+| SM-4  | Approval notification delivery                      | ≥ 99% within 10 seconds under normal network conditions         |
+| SM-5  | Session event delivery after runtime receipt        | p95 ≤ 1 second                                                  |
+| SM-6  | Crash-free mobile sessions                          | ≥ 99.5%                                                         |
+| SM-C1 | Unintended or wrongly approved destructive actions  | 0 known incidents                                                |
+| SM-C2 | Tasks marked successful while required tests failed | < 1%                                                             |
 
 Targets are assumptions until the client confirms launch scale and commercial objectives.
 
@@ -85,7 +84,7 @@ Targets are assumptions until the client confirms launch scale and commercial ob
 
 ### UJ-1 — Pair a development machine
 
-Rafi installs the companion on his laptop, signs in, and runs a pairing command. The companion displays a short-lived QR code. Rafi scans it in the mobile app, reviews the machine identity and requested capabilities, and confirms trust. The app then lists repositories explicitly shared by that runtime.
+Rafi installs the companion on his laptop, signs in, and runs a pairing command. The companion displays a short-lived QR code. Rafi scans it in the fmobile app, reviews the machine identity and requested capabilities, and confirms trust. The app then lists repositories explicitly shared by that runtime.
 
 ### UJ-2 — Start a coding task from mobile
 
@@ -362,16 +361,16 @@ The default session view should feel like Claude chat, but code actions, pending
 
 ## 10. Risks and Mitigations
 
-| Risk | Impact | Required mitigation |
-|---|---|---|
-| Mobile approval of a harmful command | Data loss or compromise | Exact action binding, risk display, deny-first rules, re-authentication, audit log |
-| Runtime has broad local access | Unauthorized source/secret exposure | Explicit workspace allowlist and runtime-enforced sandbox boundary |
-| Phone or account compromise | Remote control of developer machine | Device revocation, short-lived credentials, biometric approval, anomaly alerts |
-| Network interruption during command | Unknown or duplicated action | Command IDs, idempotent event protocol, authoritative runtime state |
-| Concurrent sessions edit same files | Conflicts and corrupted work | Worktree isolation and prominent shared-workspace warning |
-| Large logs/diffs overwhelm mobile UX | User cannot review safely | Structured summaries, progressive disclosure, pagination, raw output on demand |
-| Model claims success without evidence | Low trust and broken code | Required validation results and explicit “not run” state in completion report |
-| App-store positioning resembles Claude | Trademark/review risk | Independent brand, original visual identity, no implied Anthropic affiliation |
+| Risk                                   | Impact                              | Required mitigation                                                                |
+| -------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------- |
+| Mobile approval of a harmful command   | Data loss or compromise             | Exact action binding, risk display, deny-first rules, re-authentication, audit log |
+| Runtime has broad local access         | Unauthorized source/secret exposure | Explicit workspace allowlist and runtime-enforced sandbox boundary                 |
+| Phone or account compromise            | Remote control of developer machine | Device revocation, short-lived credentials, biometric approval, anomaly alerts     |
+| Network interruption during command    | Unknown or duplicated action        | Command IDs, idempotent event protocol, authoritative runtime state                |
+| Concurrent sessions edit same files    | Conflicts and corrupted work        | Worktree isolation and prominent shared-workspace warning                          |
+| Large logs/diffs overwhelm mobile UX   | User cannot review safely           | Structured summaries, progressive disclosure, pagination, raw output on demand     |
+| Model claims success without evidence  | Low trust and broken code           | Required validation results and explicit “not run” state in completion report    |
+| App-store positioning resembles Claude | Trademark/review risk               | Independent brand, original visual identity, no implied Anthropic affiliation      |
 
 ## 11. Exactly 10 Client Clarification Questions
 
@@ -392,17 +391,17 @@ These questions are phase-blocking for the final PRD. Until answered, the assump
 
 This draft uses current Claude Code concepts as category references, not as a commitment to clone Anthropic’s implementation:
 
-- Claude Code runs agentic work against a development environment, including file edits and command execution: <https://code.claude.com/docs/en/how-claude-code-works>
-- Remote Control uses mobile/web as a window into a session that continues to run on the user’s machine: <https://code.claude.com/docs/en/remote-control>
-- Claude Code uses tiered permission rules and permission modes for tool use: <https://code.claude.com/docs/en/permissions>
-- Sessions can be named, resumed, branched, and tied to a project directory: <https://code.claude.com/docs/en/sessions>
+- Claude Code runs agentic work against a development environment, including file edits and command execution: [https://code.claude.com/docs/en/how-claude-code-works](https://code.claude.com/docs/en/how-claude-code-works)
+- Remote Control uses mobile/web as a window into a session that continues to run on the user’s machine: [https://code.claude.com/docs/en/remote-control](https://code.claude.com/docs/en/remote-control)
+- Claude Code uses tiered permission rules and permission modes for tool use: [https://code.claude.com/docs/en/permissions](https://code.claude.com/docs/en/permissions)
+- Sessions can be named, resumed, branched, and tied to a project directory: [https://code.claude.com/docs/en/sessions](https://code.claude.com/docs/en/sessions)
 
 ## 13. Version 2 Decision Record
 
-| Date | Decision | Status | Source |
-|---|---|---|---|
-| 2026-06-21 | Replace general-purpose AI chat positioning with mobile agentic coding positioning | Confirmed | Client clarification |
-| 2026-06-21 | Preserve a Claude-like conversational mobile experience | Confirmed | Client clarification |
-| 2026-06-21 | Treat real code/tool actions as the core value, not multi-model chat | Confirmed | “used like Claude Code” |
-| 2026-06-21 | Assume local companion runtime for MVP pending client answer | Provisional | Product/technical inference |
-| 2026-06-21 | Preserve the previous requirement documents instead of overwriting them | Confirmed | Request to create requirement_v2 |
+| Date       | Decision                                                                           | Status      | Source                           |
+| ---------- | ---------------------------------------------------------------------------------- | ----------- | -------------------------------- |
+| 2026-06-21 | Replace general-purpose AI chat positioning with mobile agentic coding positioning | Confirmed   | Client clarification             |
+| 2026-06-21 | Preserve a Claude-like conversational mobile experience                            | Confirmed   | Client clarification             |
+| 2026-06-21 | Treat real code/tool actions as the core value, not multi-model chat               | Confirmed   | “used like Claude Code”        |
+| 2026-06-21 | Assume local companion runtime for MVP pending client answer                       | Provisional | Product/technical inference      |
+| 2026-06-21 | Preserve the previous requirement documents instead of overwriting them            | Confirmed   | Request to create requirement_v2 |
