@@ -1,1072 +1,748 @@
 # Product Requirements Document
-## AI Chat Mobile App
+## Puku Mobile App
 
-**Version:** 1.0  
-**Date:** June 2026  
+**Version:** 2.0
+**Date:** June 2026
 **Status:** Draft
+**Source:** Figma — https://scoop-white-12890271.figma.site/
 
 ---
 
 ## Table of Contents
 
 1. [Product Overview](#1-product-overview)
-2. [Goals & Success Metrics](#2-goals--success-metrics)
-3. [User Personas](#3-user-personas)
-4. [User Stories](#4-user-stories)
-5. [Feature Specifications](#5-feature-specifications)
-6. [UI/UX Specifications](#6-uiux-specifications)
+2. [Product Vision](#2-product-vision)
+3. [Target Users](#3-target-users)
+4. [User Journeys](#4-user-journeys)
+5. [Navigation Architecture](#5-navigation-architecture)
+6. [Feature Specifications](#6-feature-specifications)
+   - 6.1 Authentication
+   - 6.2 Chat
+   - 6.3 Incognito Chat
+   - 6.4 Navigation Drawer
+   - 6.5 Chat History (Chats)
+   - 6.6 Projects
+   - 6.7 Project Details
+   - 6.8 Project Knowledge
+   - 6.9 Add Content
+   - 6.10 Custom Instructions
+   - 6.11 Code Sessions
+   - 6.12 New Session
+   - 6.13 Create Project
+   - 6.14 Settings
 7. [Backend API Contracts](#7-backend-api-contracts)
-8. [Data Models](#8-data-models)
-9. [Non-Functional Requirements](#9-non-functional-requirements)
-10. [Out of Scope (v1)](#10-out-of-scope-v1)
-11. [Phased Delivery Plan](#11-phased-delivery-plan)
-12. [Risks & Mitigations](#12-risks--mitigations)
-13. [Open Decisions](#13-open-decisions)
+8. [Non-Functional Requirements](#8-non-functional-requirements)
+9. [MVP Scope](#9-mvp-scope)
+10. [Open Questions](#10-open-questions)
 
 ---
 
 ## 1. Product Overview
 
-### 1.1 Vision
+### 1.1 What We Are Building
 
-A polished, consumer-grade AI chat application for iOS and Android that gives users access to the world's leading AI models — Anthropic Claude, OpenAI GPT, and Google Gemini — in one unified interface. The app delivers a fluid, streaming chat experience with multimodal input support, conversation management, and a transparent freemium model.
+A native iOS and Android mobile companion for **Puku Editor** — the AI code editor that understands your entire codebase. The app lets developers interact with Puku's AI from their phone: asking questions, managing projects with knowledge context, and running live code sessions directly from a mobile device.
+
+The client — Puku — owns and operates the editor, the AI model (`puku-ai`), all backend APIs, agent execution, and workspace infrastructure. Our team owns the mobile apps and their integration with Puku's APIs.
 
 ### 1.2 Problem Statement
 
-Users who want to interact with multiple AI providers must juggle separate apps with different UX patterns, separate subscriptions, and no unified conversation history. Power users pay for overlapping plans, while casual users face high paywalls for basic access.
+Puku Editor lives at the workstation. Developers lose context and momentum when they step away: long-running agent tasks pause, code questions go unasked, and project knowledge stays locked to the desktop.
 
 ### 1.3 Solution
 
-A single app that:
-- Aggregates the best AI models behind a unified, polished chat UX.
-- Proxies all AI calls through a secure backend — no API key exposure on device.
-- Offers a generous free tier and a single Pro subscription for full access.
+A mobile app that extends Puku to the phone with three complementary experiences:
+
+| Experience | What it does |
+|---|---|
+| **Chat** | Conversational AI assistance, powered by `puku-ai`, with project context and memory |
+| **Projects** | Organize work with knowledge bases and custom instructions that shape every chat |
+| **Code** | Spin up live coding sessions with real environments, GitHub integration, and agent execution |
 
 ### 1.4 Platforms
 
 | Platform | Target |
-|----------|--------|
-| iOS | 16.0+ |
-| Android | API 29+ (Android 10+) |
+|---|---|
+| iOS | TBD (see §10) |
+| Android | TBD (see §10) |
 | Web | Out of scope for v1 |
 
 ---
 
-## 2. Goals & Success Metrics
+## 2. Product Vision
 
-### 2.1 Business Goals
-
-| Goal | KPI | Target (6 months post-launch) |
-|------|-----|-------------------------------|
-| User acquisition | Total registered users | 50,000 |
-| Retention | D30 retention | ≥ 25% |
-| Monetization | Pro conversion rate | ≥ 5% of MAU |
-| Revenue | MRR | $25,000 |
-| Quality | App Store / Play Store rating | ≥ 4.4 stars |
-
-### 2.2 Product Goals
-
-- Time-to-first-message for new users ≤ 90 seconds from app open.
-- Streaming latency ≤ 100 ms token-to-render.
-- Zero incidents of AI API keys leaked to client.
-- 99.5% backend uptime.
+A developer with Puku Editor on their workstation should be able to continue thinking, building, and steering their AI agent from their phone — and move a coding task forward safely even when away from a desk. From a phone they can open a chat, load project context, ask coding questions, start a code session, and review results — all through the same AI model that powers Puku Editor.
 
 ---
 
-## 3. User Personas
+## 3. Target Users
 
-### Persona 1 — The Everyday Explorer (Primary)
+### Primary — The Active Puku Developer
 
-- **Name:** Maya, 28, content writer
-- **Tech comfort:** Medium — uses ChatGPT occasionally, not a developer
-- **Goals:** Quick answers, creative writing help, summarizing articles
-- **Frustrations:** Paywalls after a few messages, confusing model names, no history sync
-- **Key needs:** Simple UX, fast responses, affordable price, dark mode
+An existing or newly registered Puku Editor user who wants to continue development work from their phone. They understand basic development concepts (files, branches, environments, tests) and expect their mobile experience to feel like a natural extension of Puku Editor.
 
-### Persona 2 — The Power User (Secondary)
+### Secondary — The Exploring New User
 
-- **Name:** Arjun, 34, software engineer
-- **Tech comfort:** High — pays for multiple AI subscriptions
-- **Goals:** Code review, debugging, technical explanations, comparing model outputs
-- **Frustrations:** Separate apps for each model, no custom system prompts, no file uploads
-- **Key needs:** Model switching, file/image uploads, custom instructions, markdown + syntax highlighting
+A developer who first encounters Puku through the mobile app. They sign in, start a conversation, and discover the coding-agent capabilities progressively.
 
-### Persona 3 — The Student (Secondary)
+### Non-users for MVP
 
-- **Name:** Zoe, 21, university student
-- **Tech comfort:** Medium — heavy mobile user, budget-conscious
-- **Goals:** Homework help, essay drafts, quick fact lookups
-- **Frustrations:** Expensive subscriptions, session limits mid-conversation
-- **Key needs:** Free tier with meaningful limits, voice input, conversation history
+- Non-technical consumers seeking a general AI chatbot
+- Teams requiring SSO or admin policy consoles
+- Developers expecting a full IDE running on-device
 
 ---
 
-## 4. User Stories
+## 4. User Journeys
 
-### 4.1 Authentication
+### UJ-1 — Sign in and start a conversation
 
-| ID | As a… | I want to… | So that… | Priority |
-|----|-------|-----------|----------|----------|
-| US-01 | New user | Sign up with email and password | I can create an account | Must |
-| US-02 | New user | Sign up with Google or Apple | I can skip form filling | Must |
-| US-03 | Returning user | Log in and stay logged in | I don't re-enter credentials each session | Must |
-| US-04 | User | Reset my password via email | I can recover access | Must |
-| US-05 | User | Delete my account and all data | I can exercise my right to erasure | Must |
+A new user opens the app, sees the Puku Editor value proposition, signs in with Google or email, and within seconds starts typing in the chat input. Puku responds conversationally with awareness of the developer's coding context.
 
-### 4.2 Conversations
+**Success:** User sends their first message within 90 seconds of first open.
 
-| ID | As a… | I want to… | So that… | Priority |
-|----|-------|-----------|----------|----------|
-| US-06 | User | Start a new conversation | I can talk about a new topic | Must |
-| US-07 | User | See all my past conversations in a list | I can continue where I left off | Must |
-| US-08 | User | Rename a conversation | I can identify it later | Should |
-| US-09 | User | Delete a conversation | I can clean up clutter | Must |
-| US-10 | User | Search conversations by keyword | I can find a specific thread | Should |
-| US-11 | User | Pin/star a conversation | Important chats are always at the top | Should |
-| US-12 | User | Archive a conversation | I can hide old threads without deleting | Could |
-| US-13 | User | Access conversations on a new device | History is always in sync | Must |
+### UJ-2 — Organize work in a project
 
-### 4.3 Messaging
+A developer creates a project called "Dev App", uploads a specification document to its Knowledge base, adds custom instructions telling Puku to behave as a senior iOS engineer, and starts a new chat scoped to that project. Every message in this project chat has access to the knowledge and instructions.
 
-| ID | As a… | I want to… | So that… | Priority |
-|----|-------|-----------|----------|----------|
-| US-14 | User | Send a message and see a streaming response | The AI feels fast and responsive | Must |
-| US-15 | User | See formatted responses (markdown, code blocks) | Technical content is readable | Must |
-| US-16 | User | Copy a code block with one tap | I can use code quickly | Must |
-| US-17 | User | Regenerate the last AI response | I can get a different answer | Must |
-| US-18 | User | Edit my sent message and re-submit | I can fix a typo without restarting | Should |
-| US-19 | User | Stop a response mid-stream | I can interrupt a long wrong answer | Must |
-| US-20 | User | Copy any message to clipboard | I can share or use the content elsewhere | Should |
-| US-21 | User | Share a conversation as text or screenshot | I can share useful AI answers | Could |
+**Success:** A project chat uses the uploaded knowledge and instructions in its responses.
 
-### 4.4 Model Selection
+### UJ-3 — Run a live code session
 
-| ID | As a… | I want to… | So that… | Priority |
-|----|-------|-----------|----------|----------|
-| US-22 | User | Switch the AI model for a conversation | I can choose the best model for my task | Must |
-| US-23 | User | See which model is active at a glance | I'm not confused about who I'm talking to | Must |
-| US-24 | User | Set a default model in settings | New conversations start with my preference | Should |
-| US-25 | User | See model capability badges | I know if a model supports images before uploading | Should |
+A developer opens the Code tab, taps "New Session", selects the `puku-ai-2.7` model and a Node.js 20 environment, connects their GitHub account, describes "Build a REST API", and watches Puku execute the task. They can toggle "Accept edits automatically" to control how changes are applied.
 
-### 4.5 Multimodal Input
+**Success:** Code session completes and produces observable, reviewable artifacts.
 
-| ID | As a… | I want to… | So that… | Priority |
-|----|-------|-----------|----------|----------|
-| US-26 | Pro user | Upload an image from gallery or camera | I can ask questions about visuals | Must |
-| US-27 | Pro user | Upload a PDF or document | I can get summaries or analysis | Must |
-| US-28 | User | Record a voice message as my input | I can chat hands-free | Should |
-| US-29 | User | Hear AI responses read aloud | I can consume content without reading | Could |
-| US-30 | User | Preview attachments before sending | I can confirm I'm sending the right file | Must |
+### UJ-4 — Continue a conversation privately
 
-### 4.6 Custom Instructions
+A developer needs to explore a sensitive topic without it being saved to history. They open an Incognito chat, ask their question, and when done, close the incognito session — no history, no memory update.
 
-| ID | As a… | I want to… | So that… | Priority |
-|----|-------|-----------|----------|----------|
-| US-31 | User | Set global instructions applied to every chat | The AI always knows my context/preferences | Should |
-| US-32 | User | Override the system prompt per conversation | I can give different personas per context | Should |
-| US-33 | User | Save named prompt templates | I can quickly apply a "Code Review" or "Tutor" persona | Could |
+**Success:** Incognito session leaves no trace in chat history or Puku memory.
 
-### 4.7 Settings & Personalization
+### UJ-5 — Review past work
 
-| ID | As a… | I want to… | So that… | Priority |
-|----|-------|-----------|----------|----------|
-| US-34 | User | Switch between dark and light mode | I can use the app comfortably | Must |
-| US-35 | User | Change the font size | The text is comfortable to read | Should |
-| US-36 | User | Set my preferred response language | The AI replies in my language | Could |
+A developer opens the Chats screen, searches for an old conversation, finds it, and continues from where they left off.
 
-### 4.8 Monetization
-
-| ID | As a… | I want to… | So that… | Priority |
-|----|-------|-----------|----------|----------|
-| US-37 | Free user | See how many messages I have left today | I know when I'll hit the limit | Must |
-| US-38 | User | Upgrade to Pro from within the app | I can unlock all features seamlessly | Must |
-| US-39 | Pro user | Manage or cancel my subscription | I'm in control of billing | Must |
-| US-40 | User | Restore a previous purchase | My Pro status survives reinstalls | Must |
-
-### 4.9 Data & Privacy
-
-| ID | As a… | I want to… | So that… | Priority |
-|----|-------|-----------|----------|----------|
-| US-41 | User | Export all my data as JSON or plain text | I have a copy of my conversations | Must |
-| US-42 | User | Delete all my conversation history | I can wipe my data without deleting the account | Must |
-| US-43 | User | Toggle server-side history saving off | My conversations are never stored on the server | Should |
+**Success:** Full conversation history is searchable and continuable.
 
 ---
 
-## 5. Feature Specifications
+## 5. Navigation Architecture
 
-### 5.1 Authentication
-
-#### 5.1.1 Email/Password Registration
-
-**Flow:**
-1. User enters email + password (min 8 chars, 1 uppercase, 1 number).
-2. Backend validates uniqueness, hashes password with Argon2.
-3. Sends verification email with a 24-hour token link.
-4. User taps link → account activated → JWT + refresh token issued.
-
-**Acceptance Criteria:**
-- [ ] Duplicate email returns HTTP 409 with a user-facing message.
-- [ ] Password field shows/hides toggle.
-- [ ] Verification email arrives within 60 seconds.
-- [ ] Unverified users can log in but see a banner prompting verification.
-
-#### 5.1.2 Social Login — Google & Apple
-
-**Flow:**
-1. User taps "Continue with Google/Apple".
-2. App invokes platform OAuth (Google Sign-In SDK / Sign in with Apple).
-3. Backend receives id_token, verifies with provider, creates or retrieves user record.
-4. JWT + refresh token issued and stored in secure storage.
-
-**Acceptance Criteria:**
-- [ ] Apple Sign-In required on iOS for App Store compliance.
-- [ ] Google login works on both platforms.
-- [ ] If email already registered via email/password, accounts are merged (or user is prompted).
-- [ ] Tokens stored in Flutter Secure Storage (Keychain / Android Keystore backed).
-
-#### 5.1.3 JWT Session Management
-
-- Access token TTL: 15 minutes.
-- Refresh token TTL: 30 days, rotated on each use.
-- Refresh tokens stored in httpOnly cookie on backend; mobile uses secure local storage.
-- Silent refresh: app auto-refreshes access token before expiry.
-- Revocation: logout invalidates refresh token server-side.
-
-#### 5.1.4 Password Reset
-
-1. User enters email on forgot-password screen.
-2. Backend always returns success (no email enumeration).
-3. If email exists, sends reset link (valid 1 hour, single use).
-4. New password subject to same validation rules.
-
----
-
-### 5.2 Conversation Management
-
-#### 5.2.1 Conversation List
-
-**Data shown per row:**
-- Conversation title (auto-generated from first message, user-editable)
-- Last message preview (first 80 chars)
-- Timestamp (relative: "2 hours ago", absolute on hover/long-press)
-- Active model badge
-- Pinned indicator (if pinned)
-
-**Sorting:** Pinned first, then recency descending.
-
-**Pagination:** Infinite scroll, 20 conversations per page.
-
-**Acceptance Criteria:**
-- [ ] List loads within 1 second on launch.
-- [ ] Swipe-left on a row shows Delete and Archive actions.
-- [ ] Long-press shows contextual menu: Rename, Pin/Unpin, Archive, Delete.
-- [ ] Real-time update when a new message arrives in another conversation (via WebSocket or polling).
-
-#### 5.2.2 Conversation Auto-Title
-
-- Backend generates a title by sending the first user message to a lightweight model (Haiku / GPT-4o-mini) with prompt: `"Summarize the following in 6 words or fewer: <message>"`.
-- Title generated asynchronously after first assistant response.
-- Falls back to first 40 chars of user's message if generation fails.
-
-#### 5.2.3 Search
-
-- Client-side search on the loaded conversation list for instant results.
-- Server-side full-text search (PostgreSQL `tsvector`) for queries matching older conversations not yet loaded.
-- Debounce: 300 ms.
-- Results highlight matching keywords.
-
----
-
-### 5.3 Messaging & AI Chat
-
-#### 5.3.1 Message Sending & Streaming
-
-**Request flow:**
-1. User taps Send.
-2. App POSTs to `/api/v1/conversations/{id}/messages` with user message + attachments.
-3. Backend appends user message to DB, then opens SSE stream to AI provider.
-4. Each SSE `data:` chunk is forwarded to the client as it arrives.
-5. On stream end, backend persists the complete assistant message and usage metadata.
-
-**Client rendering:**
-- Tokens appended to the bubble in real time.
-- Cursor blink animation while streaming.
-- Message status: `sending → streaming → complete | error`.
-
-**Acceptance Criteria:**
-- [ ] First token appears within 1.5 seconds of send (p95).
-- [ ] Streaming renders at ≥ 30 fps without jank.
-- [ ] Network loss mid-stream shows an error state with a Retry button.
-- [ ] Duplicate sends prevented (button disabled until previous response completes or is cancelled).
-
-#### 5.3.2 Markdown Rendering
-
-Supported elements:
-
-| Element | Rendering |
-|---------|-----------|
-| `**bold**`, `_italic_` | Bold, italic text |
-| `` `inline code` `` | Monospace, tinted background |
-| ```` ```lang\ncode\n``` ```` | Syntax-highlighted block with language label + copy button |
-| `# H1` – `### H3` | Scaled heading text |
-| `- item` / `1. item` | Bullet and numbered lists |
-| `> quote` | Left-bordered quote block |
-| `| table |` | Scrollable table (horizontal scroll if overflow) |
-| `[link](url)` | Tappable link, opens in in-app browser |
-| `---` | Horizontal rule |
-
-**Streaming note:** Markdown parser must handle partial tokens gracefully — no flickering or broken rendering mid-stream.
-
-#### 5.3.3 Code Block
-
-- Language detected from fence tag (e.g., ` ```python `).
-- Syntax highlight library: `flutter_highlight` or `re_highlight`.
-- Copy button top-right corner → copies raw code string to clipboard → shows "Copied!" toast for 1.5 s.
-- Long code blocks scroll vertically within the bubble; max height 300 dp before scroll.
-
-#### 5.3.4 Message Actions
-
-Accessed via long-press on a message bubble:
-
-| Action | User message | Assistant message |
-|--------|-------------|------------------|
-| Copy | ✓ | ✓ |
-| Edit & Re-submit | ✓ | ✗ |
-| Regenerate | ✗ | ✓ (last message only) |
-| Delete | ✓ | ✓ |
-| Share | ✓ | ✓ |
-
-**Edit & Re-submit:** Editing a user message truncates all subsequent messages in the conversation (with a confirmation dialog: "This will remove all messages after this one. Continue?").
-
-**Regenerate:** Deletes the last assistant message and re-sends the last user message to the same model.
-
-#### 5.3.5 Stop / Cancel
-
-- Cancel button appears below the streaming bubble.
-- On tap: client sends `DELETE /api/v1/conversations/{id}/messages/current-stream`.
-- Backend terminates the AI provider connection.
-- Partial response is saved as-is with a `[response cancelled]` suffix.
-
----
-
-### 5.4 Multi-Model Support
-
-#### 5.4.1 Model Selector Bottom Sheet
-
-Triggered from model badge in the conversation header.
-
-**Layout:** Grouped by provider:
-
-```
-Anthropic
-  ○ Claude Haiku 4.5       — Fast & affordable    [Free]
-  ● Claude Sonnet 4.6      — Balanced             [Pro]
-  ○ Claude Opus 4.8        — Most capable         [Pro]
-
-OpenAI
-  ○ GPT-4o mini            — Fast & affordable    [Free]
-  ○ GPT-4o                 — Multimodal flagship  [Pro]
-
-Google
-  ○ Gemini 1.5 Flash       — Fastest              [Free]
-  ○ Gemini 1.5 Pro         — Advanced reasoning   [Pro]
-```
-
-- Pro-only models shown with a lock icon to free users; tapping prompts upgrade.
-- Model change takes effect from the next message (history is preserved).
-- Selected model persists per conversation.
-
-#### 5.4.2 Model Capability Badges
-
-Shown next to model name:
-
-| Badge | Meaning |
-|-------|---------|
-| 📷 Images | Accepts image attachments |
-| 📄 Files | Accepts PDF/DOCX |
-| ⚡ Fast | Optimized for low latency |
-| 🧠 Powerful | High reasoning capability |
-
----
-
-### 5.5 Multimodal Input
-
-#### 5.5.1 Image Upload
-
-- Sources: device camera (via `image_picker`) or photo library.
-- Formats: JPEG, PNG, WEBP, GIF (first frame).
-- Max size: 20 MB per image; max 5 images per message.
-- Client compresses images > 5 MB to ≤ 5 MB before upload.
-- Upload flow: client uploads to `/api/v1/upload/image` → receives `attachment_id` → includes in message payload.
-- Backend re-encodes to provider-required format before forwarding.
-
-**Acceptance Criteria:**
-- [ ] Thumbnails shown in input bar preview strip.
-- [ ] Tap thumbnail to preview full image; long-press to remove.
-- [ ] Unsupported model + image combo shows tooltip: "This model doesn't support images. Switch to [recommended model]."
-
-#### 5.5.2 File Upload
-
-- Formats: PDF, DOCX, TXT, CSV, XLSX.
-- Max size: 25 MB per file; max 3 files per message.
-- Client shows file name + size + file type icon in preview strip.
-- Backend extracts text content server-side and injects into the prompt context for models that don't natively accept files (e.g., GPT-4o with text extraction fallback).
-
-#### 5.5.3 Voice Input (Speech-to-Text)
-
-- Uses device-native STT: `speech_to_text` Flutter package.
-- Hold-to-talk button in input bar.
-- Transcription appears in the text input field — user can edit before sending.
-- Language: auto-detect or follows response language setting.
-
-#### 5.5.4 Voice Output (Text-to-Speech)
-
-- Uses device TTS: `flutter_tts`.
-- Triggered by tapping a speaker icon on an assistant message.
-- Plays back response sentence by sentence as it streams.
-- Respects device silent/ring mode.
-
----
-
-### 5.6 Custom Instructions
-
-#### 5.6.1 Global Instructions
-
-- Found in Settings → Custom Instructions.
-- Stored as a single text field (max 2,000 chars) per user in the database.
-- Prepended to every conversation's system prompt as: `"The user has provided the following instructions:\n{instructions}"`.
-- Can be temporarily disabled with a toggle without deleting.
-
-#### 5.6.2 Per-Conversation System Prompt
-
-- Found in conversation header → "…" menu → Set System Prompt.
-- Overrides global instructions for that conversation only.
-- Stored per conversation record; shown in a distinct "System" bubble at the top of the chat.
-
-#### 5.6.3 Prompt Templates (Personas)
-
-- User can save named templates (e.g., "Code Reviewer", "English Tutor").
-- Stored in the `prompt_templates` table.
-- Applying a template fills the per-conversation system prompt field.
-- Templates are editable and deletable.
-- Max 20 templates per user.
-
----
-
-### 5.7 Settings & Personalization
-
-| Setting | Options | Default | Storage |
-|---------|---------|---------|---------|
-| Theme | Light / Dark / System | System | Local + remote |
-| Font size | Small / Medium / Large / XL | Medium | Local + remote |
-| Default model | Any available model | Claude Haiku 4.5 | Remote (user profile) |
-| Response language | Auto / English / Spanish / French / German / Japanese / Arabic / … (20 languages) | Auto | Remote |
-| Notifications | On / Off per type | All on | Remote |
-| App language | Device default / 10 languages | Device default | Local |
-| Server-side history | On / Off | On | Remote |
-
----
-
-### 5.8 Monetization
-
-#### 5.8.1 Free Tier Limits
-
-| Resource | Limit |
-|----------|-------|
-| Messages per day | 20 (across all free models) |
-| Models available | Claude Haiku 4.5, GPT-4o mini, Gemini 1.5 Flash |
-| Image uploads | Not available |
-| File uploads | Not available |
-| Voice I/O | Not available |
-| Conversation history retention | 30 days |
-| Custom instructions | Available |
-
-**Limit enforcement:** Backend tracks daily message count per user in Redis (key: `msg_count:{user_id}:{date}`, TTL midnight UTC). At 20, the API returns HTTP 429 with `{"error": "daily_limit_reached"}`. The app shows an upgrade prompt.
-
-**Usage meter:** Visible on the conversation list screen header: "18 / 20 messages used today".
-
-#### 5.8.2 Pro Tier — $9.99/month
-
-| Resource | Limit |
-|----------|-------|
-| Messages per day | Unlimited |
-| Models | All models |
-| Image uploads | ✓ (up to 5/message) |
-| File uploads | ✓ (up to 3/message) |
-| Voice I/O | ✓ |
-| Conversation history | Unlimited |
-| Priority queue | ✓ |
-
-#### 5.8.3 In-App Purchase
-
-- Platform: RevenueCat SDK (wraps StoreKit 2 on iOS, Google Play Billing v6 on Android).
-- Entitlement name: `pro`.
-- Product IDs: `com.app.chat.pro.monthly` (iOS + Android).
-- Annual plan: `com.app.chat.pro.annual` at $79.99/year (20% discount) — Phase 2.
-
-**Purchase flow:**
-1. User taps Upgrade on paywall screen.
-2. App calls RevenueCat `Purchases.purchasePackage()`.
-3. On success, RevenueCat webhooks the backend → backend sets `user.tier = 'pro'`.
-4. App receives entitlement grant → UI updates immediately.
-
-**Restore purchases:** Explicit Restore button on subscription screen; calls `Purchases.restorePurchases()`.
-
-#### 5.8.4 Subscription Management Screen
-
-Shows:
-- Current plan (Free / Pro)
-- Next billing date (for Pro)
-- Cancel subscription (deep-links to App Store / Play Store subscription management)
-- Restore purchase button
-
----
-
-### 5.9 Data & Privacy
-
-#### 5.9.1 Data Export
-
-- User requests export from Settings → Data & Privacy → Export Data.
-- Backend queues an async job; sends an email with a download link within 10 minutes.
-- Format: ZIP containing:
-  - `conversations.json` — all conversations and messages.
-  - `profile.json` — account info and settings.
-  - `attachments/` — uploaded files (if history saving is on).
-- Download link expires in 48 hours.
-
-#### 5.9.2 Data Deletion
-
-- "Delete all conversation history" — wipes all messages and conversations; account remains.
-- "Delete account" — full GDPR erasure: user record, messages, attachments, all personal data. Confirmation email sent. Process completes within 30 days per GDPR requirement.
-
-#### 5.9.3 Disable Server-Side History
-
-When toggled off:
-- Backend still processes messages to generate AI responses but does not persist them to the database.
-- Conversation list is cleared on the server.
-- A "Private mode" banner is shown in the chat header.
-
----
-
-## 6. UI/UX Specifications
-
-### 6.1 Navigation Structure
+### 5.1 Unauthenticated
 
 ```
 App
-├── Onboarding (unauthenticated)
-│   ├── Welcome / Value Prop Screen
-│   ├── Sign Up Screen
-│   └── Log In Screen
+└── Auth Screen
+    ├── Continue with Google
+    └── Email input → [onboarding / sign up / sign in]
+```
+
+### 5.2 Authenticated — Navigation Drawer
+
+The primary navigation is a **left-side drawer** accessed by the hamburger icon on any main screen.
+
+```
+Navigation Drawer
+├── [User avatar + actions]
 │
-└── Main App (authenticated)
-    ├── Sidebar Drawer
-    │   ├── New Chat button
-    │   ├── Conversation List (scrollable)
-    │   ├── ── divider ──
-    │   ├── Settings
-    │   └── User profile + plan badge
-    │
-    ├── Chat Screen (main content area)
-    │   ├── Header: conversation title + model badge + "..." menu
-    │   ├── Message List (scrollable)
-    │   └── Input Bar: text field + attach + voice + send
-    │
-    └── Settings Screen (full-screen modal)
-        ├── Profile
-        ├── Subscription
-        ├── Custom Instructions
-        ├── Appearance
-        ├── Data & Privacy
-        └── About
+├── Chats          ← chat bubble icon
+├── Projects       ← folder icon
+├── Artifacts      ← cube icon
+└── Code           ← code brackets icon
+│
+├── RECENTS
+│   └── [Recent chat items]
+│
+└── [New chat button]   ← black button with + icon
 ```
 
-### 6.2 Key Screen Layouts
+### 5.3 Main Screens
 
-#### Chat Screen — Input Bar
+| Screen | Entry Point |
+|---|---|
+| Chat (home) | Default after login; New chat from drawer |
+| Incognito Chat | Lock icon on Chat header |
+| Chats | Drawer → Chats |
+| Projects | Drawer → Projects |
+| Project Details | Projects list → tap project |
+| Project Knowledge | Project Details → Project knowledge card |
+| Custom Instructions | Project Details → Custom instructions card |
+| Code | Drawer → Code |
+| New Session | Code screen → New Session button |
+| Settings | Drawer → user avatar area |
 
-```
-┌────────────────────────────────────────────────┐
-│  [📎]  Type a message…                [🎤] [▶] │
-└────────────────────────────────────────────────┘
-```
+---
 
-- 📎 opens attachment picker (image + file options).
-- 🎤 hold-to-talk voice input.
-- ▶ send button; transforms to ⏹ stop button while streaming.
-- Input bar expands up to 5 lines, then scrolls.
-- Attachment previews appear above the input bar.
+## 6. Feature Specifications
 
-#### Message Bubble Layout
+### 6.1 Authentication
 
-```
-[User message]                    ╔══════════════╗
-                                  ║ Message text ║
-                                  ╚══════════════╝
+**Screen:** Auth (dark theme, purple gradient sphere background)
 
-[Assistant message]
-╔════════════════════════════════════╗
-║ [model icon] Claude Sonnet 4.6     ║
-║                                    ║
-║ Message text with *markdown*       ║
-║                                    ║
-║ ```python                          ║
-║ def hello(): print("hi")           ║
-║ ```              [Copy]            ║
-╚════════════════════════════════════╝
-```
+#### Layout
+- **Logo:** Purple "P" Puku logo top-left
+- **Headline:** "The AI Code Editor That Understands Your Entire **Codebase**" (Codebase in orange accent)
+- **Subheadline:** "Puku understands your entire codebase, predicts what needs to change next, and guides you through it so you can build faster without losing context."
+- **Primary CTA:** White button — "Continue with Google" (Google "G" icon)
+- **Divider:** "OR"
+- **Secondary input:** Dark email input field — "Enter your email"
+- **Legal:** "By continuing, you agree to Puku's Consumer Terms and Usage Policy, and acknowledge their Privacy Policy." (linked text)
 
-### 6.3 Theming
+#### Acceptance Criteria
 
-| Token | Light | Dark |
-|-------|-------|------|
-| Background | `#FFFFFF` | `#0F0F0F` |
-| Surface | `#F5F5F5` | `#1A1A1A` |
-| User bubble | `#E8F0FE` | `#1E3A5F` |
-| AI bubble | `#FFFFFF` | `#242424` |
-| Primary accent | `#5C6BC0` | `#7986CB` |
-| Code block bg | `#F3F4F6` | `#161B22` |
-| Text primary | `#111111` | `#E8E8E8` |
-| Text secondary | `#666666` | `#999999` |
-| Destructive | `#E53935` | `#EF5350` |
+- [ ] Google OAuth sign-in completes and navigates to Chat screen.
+- [ ] Email input accepts a valid email and proceeds to Puku's sign-up/sign-in flow.
+- [ ] Auth tokens are stored in platform-protected secure storage (Keychain / EncryptedSharedPreferences).
+- [ ] Auth state survives normal app restarts.
+- [ ] Sign-out revokes the session and clears stored tokens.
 
-Typography: System font (SF Pro / Roboto). Code font: `JetBrains Mono` or `Fira Code`.
+---
 
-### 6.4 Animations & Micro-interactions
+### 6.2 Chat Screen
 
-| Trigger | Animation |
-|---------|-----------|
-| New message send | Bubble slides up from input bar (200 ms ease-out) |
-| Streaming token | Fade-in per word chunk (80 ms) |
-| Model selector sheet | Slide up (250 ms spring) |
-| Swipe-to-delete | Slide reveal with red background |
-| Upgrade prompt | Confetti burst on successful subscription |
-| Copy code | Button flash + "Copied!" tooltip |
+**Screen:** Chat (light beige/cream background — main home screen after auth)
+
+#### Layout
+- **Top bar:** Hamburger icon (left) | Lock icon (right, opens incognito)
+- **Center greeting:** Puku "P" logo + "Good afternoon, [username]"
+- **Input bar (bottom):**
+  - Plus icon — attachment picker
+  - Text field — "Chat with Puku..."
+  - Model badge — "puku-ai-2.7"
+  - Voice/microphone icon
+  - Send button — black circle with arrow
+
+#### Behavior
+- **Empty state:** Greeting + centered logo until first message is sent.
+- **Active chat:** Message list appears above input bar; assistant responses stream in.
+- **Model badge** is tappable and shows model selection options.
+- **Voice input:** Tap microphone to record; transcription populates input field.
+- **Attachment (+):** Opens attachment picker (image from library/camera, file upload).
+- **Lock icon** in header navigates to Incognito chat.
+
+#### Acceptance Criteria
+
+- [ ] Chat streams AI responses in real time.
+- [ ] Model badge displays the currently active model.
+- [ ] Voice transcription populates the input field (user can edit before sending).
+- [ ] Attachment button opens the content picker.
+- [ ] Send button is disabled while a response is streaming.
+
+---
+
+### 6.3 Incognito Chat
+
+**Screen:** Incognito (light background, ghost icon)
+
+#### Layout
+- **Header:** Hamburger icon (left) | "Incognito chat" title (center) | Close X (right)
+- **Center state:**
+  - Ghost icon
+  - "Incognito chats can't access memory. They aren't saved to history or added to memory."
+  - "Note: Chat history is still visible to your admin. Learn more about how your data is used with Puku." (linked)
+- **Input bar:** Identical to Chat screen ("Chat with Puku...", model badge, voice, send)
+
+#### Behavior
+- Incognito chats do not appear in Chat History.
+- Incognito chats do not update Puku memory.
+- Closing (X) returns user to regular Chat screen.
+- All other chat behavior (streaming, model selection, attachments) is identical to Chat.
+
+#### Acceptance Criteria
+
+- [ ] Incognito session does not appear in the Chats list after closing.
+- [ ] Puku memory is not updated from incognito messages.
+- [ ] Admin-level visibility disclaimer is shown at all times.
+- [ ] Close button exits incognito and returns to Chat.
+
+---
+
+### 6.4 Navigation Drawer
+
+**Screen:** Nav Drawer (left-side overlay)
+
+#### Layout
+- **Title:** "Puku" (top)
+- **Lock icons** (top right — incognito shortcut)
+- **Primary navigation links:**
+  1. Chats — chat bubble icon
+  2. Projects — folder/layers icon
+  3. Artifacts — cube/box icon
+  4. Code — code brackets `</>` icon
+- **Section: "RECENTS"**
+  - Scrollable list of recent chat items (title only)
+- **Bottom row:**
+  - User avatar circle (purple "P")
+  - "New chat" button — black, "+" icon + "New chat" text
+  - Three-dot menu icon
+
+#### Acceptance Criteria
+
+- [ ] Drawer opens from hamburger icon on any main screen.
+- [ ] Tapping a nav item closes the drawer and navigates to the screen.
+- [ ] Recents list shows the most recently active chats.
+- [ ] Tapping a recent item opens that chat.
+- [ ] "New chat" creates a new blank chat and opens the Chat screen.
+- [ ] Drawer can be closed by swiping left or tapping outside it.
+
+---
+
+### 6.5 Chats Screen
+
+**Screen:** Chats (full list view)
+
+#### Layout
+- **Header:** Back arrow (left) | "Chats" title | Archive icon | Delete icon (right)
+- **Search bar:** Search icon + "Search Chats" placeholder
+- **Chat list items:**
+  - Colored chat icon (orange for recent, gray for older)
+  - Chat title
+  - Date (e.g., "May 11, 2026")
+
+#### Behavior
+- Search filters the displayed list in real time.
+- Archive icon archives selected chats.
+- Delete icon deletes selected chats.
+- Tapping a chat item opens it in the Chat screen.
+
+#### Acceptance Criteria
+
+- [ ] All saved chats are listed, newest first.
+- [ ] Search filters by chat title and message content.
+- [ ] Archive action moves chat to an archived state (not visible in main list).
+- [ ] Delete action removes the chat permanently (with confirmation).
+- [ ] Tapping a chat item resumes that conversation.
+
+---
+
+### 6.6 Projects Screen
+
+**Screen:** Projects (list view)
+
+#### Layout
+- **Header:** Hamburger icon (left) | "Projects" title | Filter/settings icon (right)
+- **Search bar:** Search icon + "Search projects" placeholder
+- **Project list items:**
+  - Project name (e.g., "Dev App")
+  - Subtitle: last edited time (e.g., "Edited Just now")
+- **Bottom bar:** "New project" button — black, "+" icon
+
+#### Acceptance Criteria
+
+- [ ] All user projects are listed.
+- [ ] Search filters by project name.
+- [ ] Tapping a project navigates to Project Details.
+- [ ] "New project" button opens the Create Project modal.
+
+---
+
+### 6.7 Project Details Screen
+
+**Screen:** Proj Details
+
+#### Layout
+- **Header:** Back arrow (left) | Project name (e.g., "Dev App") | Three-dot menu (right)
+- **Project meta:** Subtitle | "Created by Puku" with Puku icon | "Private" with lock icon
+- **Two action cards:**
+  1. **Project knowledge** card — "Add knowledge" link (orange)
+  2. **Custom instructions** card — "Add instructions" link (orange)
+- **Empty state area:**
+  - Chat bubble + cloud icon
+  - "Chats you've had with Puku will show up here."
+- **Bottom bar:** "New chat" button — black, "+" icon
+
+#### Behavior
+- "Add knowledge" link navigates to the Project Knowledge screen.
+- "Add instructions" link navigates to the Custom Instructions screen.
+- "New chat" opens a new chat scoped to this project.
+- Three-dot menu exposes: Edit project, Delete project.
+- Once chats exist, the empty state is replaced by the chat list.
+
+#### Acceptance Criteria
+
+- [ ] Project name, description, creator, and visibility are displayed correctly.
+- [ ] "Add knowledge" navigates to Project Knowledge screen.
+- [ ] "Add instructions" navigates to Custom Instructions screen.
+- [ ] "New chat" starts a new chat with this project's knowledge and instructions applied.
+- [ ] Associated project chats appear in the list below.
+
+---
+
+### 6.8 Project Knowledge Screen
+
+**Screen:** Knowledge
+
+#### Layout
+- **Header:** Back arrow (left) | "Project Knowledge" title | Three-dot menu (right)
+- **Capacity indicator:** "0% of project capacity used" (progress bar)
+- **Empty state:**
+  - Folder with plus icon
+  - "Add relevant documents, text, code, or other files here so Puku can use them as context for all your chats within [Project Name]."
+- **Bottom bar:** "Add Content" button — black, document icon + text
+
+#### Behavior
+- Capacity bar shows percentage of project knowledge storage used.
+- "Add Content" opens the Add Content bottom sheet.
+- Once files are uploaded, the empty state is replaced by a file list.
+
+#### Acceptance Criteria
+
+- [ ] Capacity indicator reflects actual storage usage from Puku API.
+- [ ] "Add Content" opens the Add Content bottom sheet.
+- [ ] Uploaded files appear in the list with name, type, and size.
+- [ ] Files in this knowledge base are sent as context with every chat in this project.
+
+---
+
+### 6.9 Add Content Bottom Sheet
+
+**Screen:** Add Content (bottom sheet modal)
+
+#### Layout
+- **Header:** Close X (left) | "Add Content to Project" title | "Upload files or create new text content" subtitle
+- **Options (icon + label):**
+  1. Upload from device — upload arrow icon
+  2. Take picture — camera icon
+  3. Choose image — image/photo icon
+  4. Create new document — pen/edit icon
+
+#### Behavior
+- "Upload from device" opens the device file picker (PDF, DOCX, TXT, CSV, XLSX, code files).
+- "Take picture" opens the device camera.
+- "Choose image" opens the device photo library.
+- "Create new document" opens an in-app text editor for pasting/typing content.
+- Successful upload dismisses the bottom sheet and refreshes the Knowledge file list.
+
+#### Acceptance Criteria
+
+- [ ] All four options work on iOS and Android.
+- [ ] Unsupported file types show an error before upload begins.
+- [ ] File size limit is enforced with a user-facing message.
+- [ ] Successful upload is reflected immediately in the Knowledge file list.
+
+---
+
+### 6.10 Custom Instructions Screen
+
+**Screen:** Instructions
+
+#### Layout
+- **Header:** "Cancel" button (left, gray) | "Custom Instructions" title (center) | "Save" button (right, orange/red)
+- **Description:** "Tell Puku how to behave in this project — tone, expertise level, format preferences, and anything else relevant."
+- **Large multiline text area:** Placeholder — "e.g. You are a senior iOS engineer. Respond concisely with code examples. Prefer Swift over Objective-C..."
+- **Bottom bar:** "Save Instructions" button — disabled (gray) until content is entered
+
+#### Behavior
+- Free-form text instructions that are prepended to the system prompt for all chats in this project.
+- "Save" button activates once text is entered.
+- "Cancel" discards changes and navigates back.
+- Saving updates the project's instructions and the "Add instructions" card shows a preview.
+
+#### Acceptance Criteria
+
+- [ ] Instructions are saved to the project and persist across sessions.
+- [ ] Saved instructions are applied to every new chat in this project.
+- [ ] Cancel discards unsaved changes (with a confirmation if changes exist).
+- [ ] Character count or limit is shown when approaching the maximum.
+
+---
+
+### 6.11 Code Screen
+
+**Screen:** Code (empty state)
+
+#### Layout
+- **Header:** Back arrow (left) | "Code" title
+- **Empty state:**
+  - Terminal window with `</>` icon
+  - "No sessions found" heading
+  - "Start a new code session to get help with coding tasks, run code, and iterate with Puku."
+- **Bottom bar:** "New Session" button — black, "+" icon
+
+#### Behavior
+- Once code sessions exist, they appear as a list in place of the empty state.
+- "New Session" opens the New Session modal.
+- Tapping an existing session reopens it.
+
+#### Acceptance Criteria
+
+- [ ] Empty state is shown when no sessions exist.
+- [ ] Existing sessions are listed with their name, environment, and last-active time.
+- [ ] "New Session" opens the New Session modal.
+- [ ] Tapping a session navigates into the active session view.
+
+---
+
+### 6.12 New Session Modal
+
+**Screen:** New Session (modal overlay on Code screen)
+
+#### Layout
+- **Header:** Close X (left) | "New Session" title
+- **MODEL section:** Dropdown — "puku-ai-2.7" with Puku icon + chevron
+- **ENVIRONMENT section:** Dropdown — "Node.js 20" with Node.js icon + chevron
+- **SUGGESTED section:** Chip buttons:
+  - "Build a REST API"
+  - "Create a React component"
+  - "Write unit tests"
+  - "Debug my code"
+- **GitHub section:** "Connect to GitHub" button with GitHub icon + chevron
+- **Settings:**
+  - Label: "Accept edits automatically"
+  - Description: "Puku will apply code changes without confirmation"
+  - Toggle switch: OFF by default
+- **Input bar (bottom):**
+  - Plus icon
+  - "Describe what you want to build..." placeholder
+  - Model badge "puku-ai-2.7"
+  - Voice icon
+  - Send button (gray/disabled until text is entered)
+
+#### Behavior
+- **Model dropdown:** Shows available Puku models.
+- **Environment dropdown:** Shows supported runtimes (Node.js 20, Python, etc.). `[API DEPENDENCY]`
+- **Suggested chips:** Tapping a chip populates the description input field.
+- **GitHub connection:** Opens OAuth flow to connect GitHub account. Once connected, shows connected repo/account.
+- **"Accept edits automatically" toggle:** When ON, Puku applies code changes without asking; when OFF, each change requires user confirmation.
+- **Send button:** Activates when description field has content; tapping starts the session.
+- **Close X:** Dismisses modal, returns to Code screen.
+
+#### Acceptance Criteria
+
+- [ ] Model selector shows Puku-API-sourced model list.
+- [ ] Environment selector shows Puku-API-sourced runtime list.
+- [ ] Suggested chips populate the description field.
+- [ ] GitHub connection persists across sessions once authorized.
+- [ ] "Accept edits automatically" toggle state is saved per session.
+- [ ] Tapping Send with a description starts a code session and navigates into it.
+- [ ] Send button is disabled when description field is empty.
+
+---
+
+### 6.13 Create Project Modal
+
+**Screen:** Create Project (modal overlay on Projects screen)
+
+#### Layout
+- **Header:** Close X (left) | "Create a project" title
+- **Field 1 — Project Name:**
+  - Label: "What are you working on?"
+  - Input: "Name your project" placeholder
+- **Field 2 — Description:**
+  - Label: "What are you trying to achieve?"
+  - Textarea: "Describe your project, goals, subject, etc..." placeholder
+- **Field 3 — Visibility:**
+  - Label: "Visibility"
+  - Dropdown button: Shows selected option with icon (e.g., "Private" + lock icon, highlighted in orange/red when selected)
+  - Options:
+    - **[Organization name]** — "Everyone in your organization can view and use this project" (building/org icon)
+    - **Private** — "Only invited members can view and use this project" (lock icon)
+- **Bottom bar:** "Create project" button — disabled (gray) until name is entered
+
+#### Behavior
+- "Create project" activates once a project name is entered.
+- Visibility defaults to "Private".
+- Tapping "Create project" creates the project via Puku API and navigates to Project Details.
+
+#### Acceptance Criteria
+
+- [ ] Project name is required; "Create project" button is disabled without it.
+- [ ] Visibility options reflect the user's organization membership from Puku API.
+- [ ] Successfully created project appears immediately in the Projects list.
+- [ ] Close X dismisses without saving.
+
+---
+
+### 6.14 Settings Screen
+
+**Screen:** Settings
+
+#### Layout
+- **Header:** Hamburger icon (left) | "Settings" title | Info icon (right)
+- **User profile section:**
+  - Email: e.g., "puku@puku.net"
+  - Username: "@puku"
+  - Badge: Black "Team" pill with dropdown arrow
+- **Settings list (icon, label, optional subtitle, chevron):**
+  1. Profile
+  2. Billing
+  3. Usage
+  4. Capabilities — subtitle: "2 enabled"
+  5. Permissions
+  6. Font style — subtitle: "Default"
+  7. Voice
+  8. Haptic feedback — toggle switch (ON/OFF)
+  9. Notifications
+  10. Shared links
+- **Bottom action:** "Log out" — red text
+
+#### Screen Descriptions
+
+| Setting | Description |
+|---|---|
+| Profile | Manage display name, avatar, account details |
+| Billing | Subscription plan, invoices, payment method |
+| Usage | Model usage metrics, quota, and credit consumption |
+| Capabilities | Feature flags enabled for this account (e.g., experimental features) |
+| Permissions | Control what Puku can access (files, repo, external services) |
+| Font style | Select font size/style for chat rendering (default: Default) |
+| Voice | Configure voice input/output preferences |
+| Haptic feedback | Toggle physical vibration feedback on actions |
+| Notifications | Control notification categories and delivery preferences |
+| Shared links | Manage publicly shared conversation or code links |
+| Log out | Sign out and clear local session data |
+
+#### Acceptance Criteria
+
+- [ ] User email, username, and team badge are fetched from Puku API.
+- [ ] Tapping any settings row navigates to the corresponding detail screen.
+- [ ] Haptic feedback toggle takes effect immediately.
+- [ ] "Log out" clears all session tokens and returns user to Auth screen.
 
 ---
 
 ## 7. Backend API Contracts
 
-Base URL: `https://api.{app-domain}.com/api/v1`
+All mobile features depend on APIs provided and hosted by Puku. The following table maps each mobile feature to the required API capability. Exact endpoint paths, schemas, and authentication flows must be confirmed with Puku before implementation begins.
 
-All endpoints require `Authorization: Bearer {access_token}` unless noted.
+| Feature | Required Puku API capability |
+|---|---|
+| Google / email sign-in | OAuth / OIDC or equivalent mobile-safe auth flow |
+| Token refresh + revocation | Short-lived access tokens with refresh + logout invalidation |
+| User profile + team | `/users/me` — profile, email, username, team/org membership |
+| Chat — send message | POST message with SSE streaming response |
+| Chat — conversation history | List and paginate past conversations |
+| Chat — model selection | Config endpoint returning available models |
+| Incognito chat | Send message without persistence (server-side no-save mode) |
+| Projects — CRUD | Create, read, update, delete project entities |
+| Project knowledge — upload | Upload document/image to project knowledge base |
+| Project knowledge — capacity | Capacity and usage metadata per project |
+| Custom instructions | Store and retrieve per-project system prompt text |
+| Code sessions — list | List active and historical sessions |
+| Code sessions — create | Create a session with model, environment, and description |
+| Code sessions — stream | Real-time event stream for session progress |
+| Environments | Config endpoint returning available runtime environments |
+| GitHub connection | OAuth flow to connect and identify a GitHub account |
+| Accept edits flag | Per-session permission mode (auto-accept vs. manual confirmation) |
+| Usage + quota | `/users/me/usage` — model usage, quota, credits |
+| Capabilities | Feature flags / capabilities enabled for the account |
+| Notifications | Push token registration and notification preference management |
+| Shared links | CRUD for publicly shared chat or code session links |
 
-### 7.1 Auth
+### 7.1 Real-time Requirements
 
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/auth/register` | Register with email + password |
-| POST | `/auth/login` | Login; returns access + refresh tokens |
-| POST | `/auth/logout` | Revoke refresh token |
-| POST | `/auth/refresh` | Exchange refresh token for new access token |
-| POST | `/auth/forgot-password` | Send reset email |
-| POST | `/auth/reset-password` | Apply new password with token |
-| POST | `/auth/oauth/google` | Google OAuth sign-in |
-| POST | `/auth/oauth/apple` | Apple Sign-In |
+- Chat message streaming must use SSE (Server-Sent Events) or WebSocket.
+- Code session events (agent progress, file edits, command output) must use SSE or WebSocket with event replay / cursor support to recover from disconnects.
+- Puku must provide stable event identifiers and ordering guarantees.
 
-**POST /auth/register**
+### 7.2 Integration Contract Requirements
 
-```json
-Request:
-{
-  "email": "user@example.com",
-  "password": "SecurePass123"
-}
-
-Response 201:
-{
-  "access_token": "eyJ...",
-  "refresh_token": "...",
-  "user": { "id": "uuid", "email": "...", "tier": "free" }
-}
-
-Error 409:
-{ "error": "email_already_registered" }
-```
-
-### 7.2 Conversations
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/conversations` | List conversations (paginated) |
-| POST | `/conversations` | Create new conversation |
-| GET | `/conversations/{id}` | Get conversation + messages |
-| PATCH | `/conversations/{id}` | Update title, pinned, archived |
-| DELETE | `/conversations/{id}` | Delete conversation |
-| GET | `/conversations/search?q={query}` | Full-text search |
-
-**GET /conversations**
-
-```
-Query params: page (default 1), limit (default 20)
-
-Response 200:
-{
-  "items": [
-    {
-      "id": "uuid",
-      "title": "Python async question",
-      "last_message_preview": "Thanks! One more thing...",
-      "last_message_at": "2026-06-18T14:30:00Z",
-      "model_id": "claude-sonnet-4-6",
-      "pinned": false,
-      "archived": false,
-      "message_count": 12
-    }
-  ],
-  "total": 87,
-  "page": 1,
-  "limit": 20
-}
-```
-
-### 7.3 Messages & Streaming
-
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/conversations/{id}/messages` | Send message; returns SSE stream |
-| DELETE | `/conversations/{id}/messages/current-stream` | Cancel active stream |
-| PATCH | `/conversations/{id}/messages/{msg_id}` | Edit message |
-| DELETE | `/conversations/{id}/messages/{msg_id}` | Delete message |
-
-**POST /conversations/{id}/messages — SSE**
-
-```
-Request (multipart/form-data if attachments, else application/json):
-{
-  "content": "Explain async/await in Python",
-  "model_id": "claude-sonnet-4-6",
-  "attachment_ids": []
-}
-
-Response: text/event-stream
-data: {"type": "token", "content": "Async"}
-data: {"type": "token", "content": "/await"}
-data: {"type": "token", "content": " in Python..."}
-data: {"type": "done", "message_id": "uuid", "usage": {"input_tokens": 12, "output_tokens": 340}}
-data: [DONE]
-```
-
-### 7.4 File Upload
-
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/upload/image` | Upload image; returns attachment_id |
-| POST | `/upload/file` | Upload document; returns attachment_id |
-
-**POST /upload/image**
-
-```
-Request: multipart/form-data, field: "file"
-Max size: 20 MB
-
-Response 201:
-{
-  "attachment_id": "uuid",
-  "url": "https://cdn.../thumb.jpg",
-  "mime_type": "image/jpeg",
-  "size_bytes": 1204800
-}
-
-Error 413: { "error": "file_too_large", "max_bytes": 20971520 }
-```
-
-### 7.5 User & Settings
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/users/me` | Get current user profile + settings |
-| PATCH | `/users/me` | Update display name, avatar, settings |
-| DELETE | `/users/me` | Delete account (GDPR erasure) |
-| GET | `/users/me/usage` | Daily message count + limits |
-| POST | `/users/me/export` | Request data export |
-
-### 7.6 Subscription
-
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/subscription/verify` | Verify RevenueCat purchase |
-| GET | `/subscription/status` | Get current subscription status |
-
-**POST /subscription/verify** (called by RevenueCat webhook, not the app directly)
-
-```json
-{
-  "event": "INITIAL_PURCHASE",
-  "app_user_id": "uuid",
-  "product_id": "com.app.chat.pro.monthly",
-  "entitlements": ["pro"]
-}
-```
+- All endpoints must be documented with OpenAPI or equivalent before mobile sprint begins.
+- Puku provides: base URL per environment, auth documentation, error codes, pagination, rate limits, and versioning policy.
+- Unsupported API capabilities must be feature-gated in the app — not simulated client-side.
 
 ---
 
-## 8. Data Models
+## 8. Non-Functional Requirements
 
-### 8.1 Users
+### 8.1 Performance
 
-```sql
-CREATE TABLE users (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email           TEXT UNIQUE NOT NULL,
-    password_hash   TEXT,                          -- null for OAuth-only users
-    display_name    TEXT,
-    avatar_url      TEXT,
-    tier            TEXT NOT NULL DEFAULT 'free',  -- 'free' | 'pro'
-    email_verified  BOOLEAN NOT NULL DEFAULT FALSE,
-    oauth_providers JSONB DEFAULT '[]',            -- [{provider, provider_user_id}]
-    settings        JSONB DEFAULT '{}',            -- theme, font_size, default_model, etc.
-    custom_instructions TEXT,
-    history_saving  BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    deleted_at      TIMESTAMPTZ                    -- soft delete for GDPR
-);
-```
+| Requirement | Target |
+|---|---|
+| App cold start → first screen visible | < 3 seconds (mid-range Android) |
+| Chat screen loads (cached state) | < 2 seconds |
+| First streaming token after send | < 1.5 seconds (p95) |
+| Event render after receipt | < 250 ms |
+| Projects / Chats list loads | < 1 second |
 
-### 8.2 Conversations
+### 8.2 Security
 
-```sql
-CREATE TABLE conversations (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    title           TEXT NOT NULL DEFAULT 'New Chat',
-    model_id        TEXT NOT NULL,
-    system_prompt   TEXT,
-    pinned          BOOLEAN NOT NULL DEFAULT FALSE,
-    archived        BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    last_message_at TIMESTAMPTZ
-);
+| Control | Requirement |
+|---|---|
+| All network traffic | TLS 1.3 minimum |
+| Auth tokens | Stored in `flutter_secure_storage` (Keychain / EncryptedSharedPreferences) |
+| Puku credentials | Short-lived, scoped, revocable; never hardcoded in app bundle |
+| Sensitive approvals (code sessions) | Require authenticated app session; biometric re-auth available |
+| Source code / secrets in logs | Excluded from telemetry and support bundles by default |
 
-CREATE INDEX idx_conversations_user_updated ON conversations(user_id, updated_at DESC);
-CREATE INDEX idx_conversations_search ON conversations USING GIN(to_tsvector('english', title));
-```
+### 8.3 Reliability
 
-### 8.3 Messages
+| Requirement | Target |
+|---|---|
+| Crash-free sessions | ≥ 99.5% |
+| Chat and session state after reconnect | Reconciled from Puku API; no duplicate sends |
+| Offline mode | Recent chats and project metadata readable; marked with last-sync time |
 
-```sql
-CREATE TABLE messages (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
-    role            TEXT NOT NULL,                 -- 'user' | 'assistant' | 'system'
-    content         TEXT NOT NULL,
-    model_id        TEXT,                          -- set for assistant messages
-    attachment_ids  UUID[] DEFAULT '{}',
-    input_tokens    INTEGER,
-    output_tokens   INTEGER,
-    cancelled       BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+### 8.4 Accessibility
 
-CREATE INDEX idx_messages_conversation ON messages(conversation_id, created_at ASC);
-CREATE INDEX idx_messages_search ON messages USING GIN(to_tsvector('english', content));
-```
+- WCAG 2.2 AA contrast and labeling on all user-facing screens.
+- Dynamic text (system font size) support.
+- Full screen-reader compatibility (VoiceOver / TalkBack).
+- Minimum 44 × 44 pt touch targets.
+- Non-color-only indicators (e.g., diff changes not conveyed by color alone).
 
-### 8.4 Attachments
+### 8.5 Compatibility
 
-```sql
-CREATE TABLE attachments (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    type            TEXT NOT NULL,                 -- 'image' | 'file'
-    original_name   TEXT NOT NULL,
-    mime_type       TEXT NOT NULL,
-    size_bytes      INTEGER NOT NULL,
-    storage_key     TEXT NOT NULL,                 -- S3/GCS object key
-    thumbnail_url   TEXT,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-```
-
-### 8.5 Prompt Templates
-
-```sql
-CREATE TABLE prompt_templates (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    name            TEXT NOT NULL,
-    content         TEXT NOT NULL,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-```
-
-### 8.6 Refresh Tokens
-
-```sql
-CREATE TABLE refresh_tokens (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    token_hash      TEXT NOT NULL UNIQUE,
-    expires_at      TIMESTAMPTZ NOT NULL,
-    revoked         BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-```
-
-### 8.7 Daily Usage (Redis)
-
-```
-Key:    msg_count:{user_id}:{YYYY-MM-DD}
-Value:  integer (incremented per assistant message)
-TTL:    Midnight UTC of the given day + 1 hour
-```
+| Platform | Note |
+|---|---|
+| iOS | Minimum version: TBD (see §10) |
+| Android | Minimum version: TBD (see §10) |
+| Flutter | Pinned via FVM; all commands run as `fvm flutter` / `fvm dart` |
 
 ---
 
-## 9. Non-Functional Requirements
+## 9. MVP Scope
 
-### 9.1 Performance
+### 9.1 In Scope
 
-| Requirement | Target | Measurement |
-|-------------|--------|-------------|
-| App cold start | < 3 seconds | Device: mid-range Android (Pixel 6a) |
-| First meaningful paint | < 2 seconds | Time to conversation list visible |
-| First token latency | < 1.5 seconds (p95) | Send tap → first streaming token |
-| Token render rate | ≥ 30 fps | No frame drops during stream |
-| API response (non-streaming) | < 500 ms (p99) | Auth, list, CRUD endpoints |
-| Offline read | Cached conversations readable with no network | |
+- iOS and Android apps.
+- Authentication: Google OAuth + email sign-in.
+- Chat: streaming AI conversation, model selection, voice input, attachments.
+- Incognito chat: private, history-free conversations.
+- Navigation drawer: Chats, Projects, Artifacts (placeholder), Code.
+- Chat history: list, search, archive, delete.
+- Projects: create, list, view details.
+- Project knowledge: upload documents/images/text.
+- Custom instructions: per-project system prompt.
+- Code sessions: create with model + environment selection, GitHub connection, accept-edits toggle.
+- Settings: profile, billing, usage, capabilities, permissions, appearance, notifications, log out.
+- Push notifications for code session events.
 
-### 9.2 Scalability
-
-| Component | Strategy |
-|-----------|---------|
-| FastAPI workers | Stateless; horizontal scaling via container orchestration |
-| Database | PostgreSQL with read replicas for list/search queries |
-| Streaming | SSE; one long-lived connection per active message |
-| Rate limiting | Redis sliding window per user per endpoint |
-| File storage | S3/GCS with CDN for attachment delivery |
-
-### 9.3 Security
-
-| Control | Implementation |
-|---------|---------------|
-| AI API key management | Keys stored in backend env/secrets manager only; never in app bundle or responses |
-| Transport security | TLS 1.3 enforced; HSTS header |
-| Token storage (mobile) | `flutter_secure_storage` (Keychain on iOS, EncryptedSharedPreferences on Android) |
-| Password hashing | Argon2id (memory: 64 MB, iterations: 3, parallelism: 4) |
-| Rate limiting | 60 req/min per IP on auth endpoints; 200 req/min per user on chat endpoints |
-| Input sanitization | Prompt injection mitigation at the API layer (content length limit, blocked patterns) |
-| JWT | HS256 access token (15 min); refresh token rotation on every use; revocation list in Redis |
-| File validation | MIME type + magic bytes check on upload; antivirus scan (ClamAV or equivalent) |
-| CORS | Explicit origin allowlist; `credentials: true` only for verified origins |
-
-### 9.4 Compliance
-
-| Requirement | Implementation |
-|-------------|---------------|
-| GDPR Art. 17 (Right to erasure) | Account deletion API; 30-day completion SLA |
-| GDPR Art. 20 (Data portability) | JSON/ZIP export on request |
-| CCPA | Privacy policy; opt-out of data sale (N/A — we don't sell data) |
-| App Store privacy labels | Accurately reflect all data types collected |
-| Play Store data safety | Form completed before submission |
-| COPPA | No service to users under 13; age gate on sign-up |
-
-### 9.5 Availability
-
-| Component | SLA |
-|-----------|-----|
-| API backend | 99.5% monthly uptime |
-| Database | 99.9% (managed PostgreSQL with automated failover) |
-| Object storage | 99.99% (S3/GCS SLA) |
-
----
-
-## 10. Out of Scope (v1)
+### 9.2 Out of Scope for MVP
 
 | Feature | Notes |
-|---------|-------|
-| Web app companion | Evaluate for v2 |
-| Web search / grounding | Requires Tavily or Brave API integration — v2 |
-| Code execution sandbox | Complex infra (container sandboxing) — v2 |
-| Self-hosted LLM option | Ollama / local model support — not planned |
-| Annual subscription plan | RevenueCat config ready; launch after iOS approval |
-| Team / enterprise accounts | Single-user product for v1 |
-| Plugin / tool ecosystem | No function calling or custom tools in v1 |
-| Video input | Gemini supports it; deferred to v2 |
-| RTL language support | Deferred after launch |
-| iPad / tablet layout | Responsive but not optimized — v2 |
+|---|---|
+| Artifacts section | Navigation slot present; content deferred to v2 |
+| Full code diff review | Deferred to v2 |
+| Multi-agent / team orchestration | Deferred |
+| On-device code execution | Puku cloud environments only |
+| Web app | Mobile-only for v1 |
+| iPad / tablet layout | Responsive but not optimized |
+| RTL language support | Deferred post-launch |
+| Admin / SSO / enterprise policy | Not in MVP |
 
 ---
 
-## 11. Phased Delivery Plan
+## 10. Open Questions
 
-### Phase 1 — MVP (Months 1–3)
-
-**Goal:** Functional app on both platforms, shippable for beta.
-
-| Feature | Notes |
-|---------|-------|
-| Email + Google/Apple auth | Core auth flow |
-| Text chat — Claude Haiku + Sonnet | Streaming SSE |
-| Text chat — GPT-4o mini + 4o | Streaming SSE |
-| Conversation CRUD | Create, list, delete, auto-title |
-| Markdown + syntax highlighting | Full renderer |
-| Dark/light mode | System default |
-| Free tier (20 messages/day) | Redis counter |
-| Pro subscription (RevenueCat) | Monthly only |
-| Basic settings | Theme, font size, default model |
-
-**Exit criteria:** Internal beta available on TestFlight and Play Console internal testing.
-
-### Phase 2 — Feature Complete (Months 4–5)
-
-| Feature | Notes |
-|---------|-------|
-| Gemini Pro + Flash | Provider gateway update |
-| Image uploads | Camera + gallery |
-| File uploads | PDF, DOCX, TXT |
-| Voice input (STT) | `speech_to_text` |
-| Voice output (TTS) | `flutter_tts` |
-| Custom instructions (global + per-convo) | Settings screen |
-| Data export + deletion | Async job |
-| Conversation search | FTS + client |
-| Conversation rename, pin, archive | Swipe + context menu |
-| Edit message & re-submit | Truncation confirmation |
-
-**Exit criteria:** Feature freeze; QA testing begins; App Store / Play Store submission.
-
-### Phase 3 — Polish & Launch (Month 6)
-
-| Activity | Notes |
-|----------|-------|
-| Performance optimization | Cold start, render profiling |
-| Accessibility audit | TalkBack / VoiceOver testing |
-| Localization (English + 2 additional) | i18n framework in place |
-| Analytics instrumentation | Mixpanel / Amplitude events |
-| Crash reporting | Sentry or Firebase Crashlytics |
-| App Store submission | Review time buffer: 1–3 days |
-| Play Store submission | Review time buffer: 1–3 days |
-| Soft launch (limited geography) | Validate metrics before global rollout |
+| # | Question | Owner | Required by |
+|---|---|---|---|
+| OQ-1 | Minimum iOS and Android versions | Engineering + Puku | Sprint 1 |
+| OQ-2 | Puku authentication flow: OAuth/OIDC spec, token TTLs, refresh, MFA | Puku | Sprint 1 |
+| OQ-3 | Available environments for Code sessions (beyond Node.js 20) | Puku | Sprint 2 |
+| OQ-4 | Knowledge base capacity limits and supported file types/sizes | Puku | Sprint 2 |
+| OQ-5 | Real-time protocol: SSE vs. WebSocket for chat and code session events | Puku | Sprint 1 |
+| OQ-6 | Exact model list returned by Puku config API; is `puku-ai-2.7` the only model at launch? | Puku | Sprint 1 |
+| OQ-7 | Organization/team API: how is the "Team" badge populated? What org entities are available? | Puku | Sprint 1 |
+| OQ-8 | Billing and usage screens: does Puku provide a web URL to embed, or do we build native UI? | Puku | Sprint 3 |
+| OQ-9 | Artifacts: what is an artifact in Puku's data model? What should this screen show? | Puku + Product | Sprint 2 |
+| OQ-10 | GitHub OAuth: Puku-owned flow or mobile-owned? Does connection persist in Puku account? | Puku | Sprint 2 |
+| OQ-11 | Shared links: what content can be shared and how are public links managed? | Puku | Sprint 3 |
+| OQ-12 | App name in stores — is it "Puku" or "Puku Editor"? Trademark status? | Puku / Legal | Pre-submission |
+| OQ-13 | Analytics platform: does Puku require a specific SDK (Mixpanel, Amplitude, etc.)? | Puku | Sprint 1 |
+| OQ-14 | Notification types: which session events trigger push notifications from Puku backend? | Puku | Sprint 2 |
 
 ---
 
-## 12. Risks & Mitigations
-
-| # | Risk | Likelihood | Impact | Mitigation |
-|---|------|-----------|--------|-----------|
-| R-01 | AI provider API pricing changes eat margin | Medium | High | Abstract provider layer; usage-based throttling; cost alerts |
-| R-02 | App Store rejection (AI content policy) | Medium | High | Review Apple AI app guidelines; add content filters; prepare appeal |
-| R-03 | Streaming latency issues on slow networks | High | Medium | Graceful degradation; retry logic; offline message queuing |
-| R-04 | RevenueCat webhook delays cause entitlement lag | Low | High | Optimistic entitlement grant with server confirmation |
-| R-05 | GDPR/data breach notification requirement | Low | Very High | Minimal data retention; encryption at rest; incident response plan |
-| R-06 | Provider outage (Anthropic/OpenAI/Google down) | Medium | Medium | Per-provider error states; fallback model suggestion |
-| R-07 | Flutter version fragmentation / breaking changes | Low | Medium | Pin Flutter version via FVM; staging environment for upgrades |
-
----
-
-## 13. Open Decisions
-
-| # | Decision | Owner | Target Date | Options |
-|---|----------|-------|-------------|---------|
-| OD-01 | App name and branding | Product | Month 1 | TBD — needs trademark check |
-| OD-02 | Hosting provider | Engineering | Month 1 | Railway vs. Render vs. AWS ECS |
-| OD-03 | State management library | Engineering | Month 1 | Riverpod vs. BLoC |
-| OD-04 | Analytics platform | Product | Month 2 | Mixpanel vs. Amplitude vs. PostHog |
-| OD-05 | Annual plan pricing | Product | Month 3 | $79.99 (20% off) vs. $69.99 (30% off) |
-| OD-06 | Web search (v2 scope) | Product | Post-launch | Tavily vs. Brave Search API |
-
----
-
-*Document version: 1.0 — June 2026*
+*Document version: 2.0 — June 2026 — based on Figma: https://scoop-white-12890271.figma.site/*
